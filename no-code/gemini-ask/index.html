@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HackVibe - 黑客松现场社交</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .landing-container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    .hero-section {
+      max-width: 800px;
+      margin-bottom: 60px;
+    }
+
+    .main-logo {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 64px;
+      color: var(--neon-cyan);
+      text-shadow:
+        0 0 20px var(--neon-cyan),
+        0 0 40px var(--neon-cyan),
+        0 0 60px var(--neon-cyan);
+      margin-bottom: 30px;
+      letter-spacing: 5px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .tagline {
+      font-family: 'VT323', monospace;
+      font-size: 28px;
+      color: var(--neon-pink);
+      text-shadow: 0 0 15px var(--neon-pink);
+      margin-bottom: 20px;
+      letter-spacing: 3px;
+    }
+
+    .description {
+      font-family: 'Orbitron', monospace;
+      font-size: 18px;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      max-width: 600px;
+      margin: 0 auto 40px;
+    }
+
+    .cta-section {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .cta-btn {
+      min-width: 300px;
+      padding: 25px 50px;
+      font-size: 20px;
+      text-decoration: none;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 30px;
+      max-width: 1000px;
+      margin-top: 80px;
+    }
+
+    .feature-card {
+      padding: 30px;
+      background: var(--card-bg);
+      border: 2px solid rgba(0, 255, 255, 0.3);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .feature-card:hover {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+      transform: translateY(-5px);
+    }
+
+    .feature-icon {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+
+    .feature-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 20px;
+      color: var(--neon-cyan);
+      margin-bottom: 15px;
+      font-weight: 700;
+    }
+
+    .feature-desc {
+      font-family: 'VT323', monospace;
+      font-size: 18px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .nav-links {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      gap: 15px;
+      z-index: 100;
+    }
+
+    .nav-link {
+      padding: 10px 20px;
+      background: rgba(5, 8, 20, 0.9);
+      border: 1px solid rgba(0, 255, 255, 0.3);
+      color: var(--neon-cyan);
+      font-family: 'VT323', monospace;
+      font-size: 16px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .nav-link:hover {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+    }
+
+    @media (max-width: 768px) {
+      .main-logo {
+        font-size: 36px;
+      }
+
+      .tagline {
+        font-size: 20px;
+      }
+
+      .description {
+        font-size: 16px;
+      }
+
+      .cta-btn {
+        min-width: 250px;
+        padding: 20px 40px;
+        font-size: 18px;
+      }
+
+      .nav-links {
+        position: static;
+        margin-bottom: 30px;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-grid"></div>
+
+  <div class="nav-links">
+    <a href="onboarding.html" class="nav-link">开始体验</a>
+  </div>
+
+  <div class="landing-container">
+    <div class="hero-section">
+      <h1 class="main-logo glitch" data-text="HACKVIBE">HACKVIBE</h1>
+      <p class="tagline">[ 把填表社交变成现场 RPG ]</p>
+      <p class="description">
+        黑客松现场社交的全新方式。用 AI 生成你的赛博人设，在气泡星图中发现有趣的灵魂，
+        通过命运扭蛋机遇见技能互补的伙伴。告别严肃简历，拥抱真实的黑客松状态。
+      </p>
+
+      <div class="cta-section">
+        <a href="onboarding.html" class="neon-btn cta-btn">
+          开始生成我的人设
+        </a>
+        <div style="font-family: 'VT323', monospace; font-size: 16px; color: var(--text-secondary);">
+          ⚡ 30 秒完成注册 | 零门槛社交
+        </div>
+      </div>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card pixel-corner">
+        <div class="feature-icon">🎭</div>
+        <div class="feature-title">灵魂生成器</div>
+        <div class="feature-desc">
+          AI 为你定制中二称号，用"梗"代替简历，展现真实的黑客松状态
+        </div>
+      </div>
+
+      <div class="feature-card pixel-corner">
+        <div class="feature-icon">🌌</div>
+        <div class="feature-title">现场星图</div>
+        <div class="feature-desc">
+          可视化气泡图，实时看到周围的黑客们，按技能筛选，一键连接
+        </div>
+      </div>
+
+      <div class="feature-card pixel-corner">
+        <div class="feature-icon">💳</div>
+        <div class="feature-title">黑客身份卡</div>
+        <div class="feature-desc">
+          全息风格的个人名片，AI 推荐破冰话题，低压力贴纸互动
+        </div>
+      </div>
+
+      <div class="feature-card pixel-corner">
+        <div class="feature-icon">🎰</div>
+        <div class="feature-title">命运扭蛋机</div>
+        <div class="feature-desc">
+          摇一摇抽取今日缘分，算法推荐互补或同好的伙伴，交友游戏化
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 80px; padding: 30px; max-width: 600px; border: 2px solid rgba(255, 0, 255, 0.3); background: rgba(5, 8, 20, 0.8);">
+      <div style="font-family: 'VT323', monospace; font-size: 20px; color: var(--neon-purple); margin-bottom: 15px;">
+        📢 设计理念
+      </div>
+      <div style="font-family: 'VT323', monospace; font-size: 16px; color: var(--text-secondary); line-height: 1.8; text-align: left;">
+        • 去严肃化：拒绝 LinkedIn 式的职业假笑<br>
+        • 即时满足：所见即所得，推荐即连接<br>
+        • 极简交互：没时间填长表单，快速上手<br>
+        • 趣味优先：用游戏化思维降低社交压力
+      </div>
+    </div>
+
+    <div style="margin-top: 40px; font-family: 'VT323', monospace; font-size: 14px; color: var(--text-secondary);">
+      © 2025 HackVibe | 黑客松现场社交原型 | 赛博朋克风格设计
+    </div>
+  </div>
+
+  <script>
+    // Add some sparkle effect on mouse move
+    document.addEventListener('mousemove', (e) => {
+      if (Math.random() > 0.95) {
+        const sparkle = document.createElement('div');
+        sparkle.style.cssText = `
+          position: fixed;
+          left: ${e.clientX}px;
+          top: ${e.clientY}px;
+          width: 4px;
+          height: 4px;
+          background: var(--neon-cyan);
+          box-shadow: 0 0 10px var(--neon-cyan);
+          pointer-events: none;
+          z-index: 9999;
+          animation: sparkle-fade 1s ease-out forwards;
+        `;
+        document.body.appendChild(sparkle);
+
+        setTimeout(() => sparkle.remove(), 1000);
+      }
+    });
+
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes sparkle-fade {
+        0% { opacity: 1; transform: scale(1); }
+        100% { opacity: 0; transform: scale(0); }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>

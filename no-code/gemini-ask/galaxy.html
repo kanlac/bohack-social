@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>现场星图 | HackVibe</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      overflow: hidden;
+    }
+
+    .galaxy-container {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      background: radial-gradient(ellipse at center, rgba(10, 14, 39, 0.8) 0%, var(--darker-bg) 100%);
+    }
+
+    /* Radar effect */
+    .radar-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80vmin;
+      height: 80vmin;
+      pointer-events: none;
+    }
+
+    .radar-ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border: 1px solid rgba(0, 255, 255, 0.2);
+      border-radius: 50%;
+    }
+
+    .radar-ring:nth-child(1) {
+      width: 100%;
+      height: 100%;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
+    }
+
+    .radar-ring:nth-child(2) {
+      width: 66%;
+      height: 66%;
+      border-color: rgba(0, 255, 255, 0.15);
+    }
+
+    .radar-ring:nth-child(3) {
+      width: 33%;
+      height: 33%;
+      border-color: rgba(0, 255, 255, 0.1);
+    }
+
+    .radar-sweep {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 50%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--neon-cyan), transparent);
+      transform-origin: left center;
+      animation: rotate-scan 8s linear infinite;
+      box-shadow: 0 0 20px var(--neon-cyan);
+    }
+
+    /* Top bar */
+    .top-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 20px;
+      background: rgba(5, 8, 20, 0.9);
+      border-bottom: 2px solid rgba(0, 255, 255, 0.3);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .top-bar-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .logo-small {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 16px;
+      color: var(--neon-cyan);
+      text-shadow: 0 0 10px var(--neon-cyan);
+    }
+
+    .filter-tags {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-status {
+      padding: 10px 20px;
+      background: rgba(0, 255, 255, 0.1);
+      border: 1px solid var(--neon-cyan);
+      border-radius: 20px;
+      font-family: 'VT323', monospace;
+      font-size: 16px;
+      color: var(--neon-cyan);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .user-status:hover {
+      background: rgba(0, 255, 255, 0.2);
+      box-shadow: 0 0 15px var(--neon-cyan);
+    }
+
+    /* User bubbles */
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      transition: all 0.3s ease;
+      animation: float 3s ease-in-out infinite;
+      background: rgba(15, 20, 40, 0.8);
+      border: 2px solid;
+      backdrop-filter: blur(10px);
+    }
+
+    .bubble.self {
+      width: 100px;
+      height: 100px;
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 30px var(--neon-cyan);
+      z-index: 50;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .bubble.online {
+      border-color: var(--neon-green);
+      box-shadow: 0 0 20px var(--neon-green);
+    }
+
+    .bubble.busy {
+      border-color: var(--neon-pink);
+      box-shadow: 0 0 20px var(--neon-pink);
+    }
+
+    .bubble.away {
+      border-color: var(--neon-yellow);
+      box-shadow: 0 0 20px var(--neon-yellow);
+    }
+
+    .bubble.high-match {
+      width: 90px;
+      height: 90px;
+    }
+
+    .bubble.medium-match {
+      width: 70px;
+      height: 70px;
+    }
+
+    .bubble.low-match {
+      width: 50px;
+      height: 50px;
+    }
+
+    .bubble:hover {
+      transform: scale(1.2);
+      z-index: 60;
+    }
+
+    .bubble-avatar {
+      width: 60%;
+      height: 60%;
+      background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      font-size: 18px;
+      margin-bottom: 5px;
+    }
+
+    .bubble.self .bubble-avatar {
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-green));
+      font-size: 24px;
+    }
+
+    .bubble-name {
+      font-family: 'VT323', monospace;
+      font-size: 12px;
+      color: var(--text-primary);
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      padding: 0 5px;
+    }
+
+    .bubble-status {
+      position: absolute;
+      bottom: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 3px 10px;
+      border-radius: 10px;
+      font-family: 'VT323', monospace;
+      font-size: 11px;
+      white-space: nowrap;
+      border: 1px solid;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .bubble:hover .bubble-status {
+      opacity: 1;
+    }
+
+    .bubble.online .bubble-status {
+      border-color: var(--neon-green);
+      color: var(--neon-green);
+    }
+
+    .bubble.busy .bubble-status {
+      border-color: var(--neon-pink);
+      color: var(--neon-pink);
+    }
+
+    .bubble.away .bubble-status {
+      border-color: var(--neon-yellow);
+      color: var(--neon-yellow);
+    }
+
+    /* Stats panel */
+    .stats-panel {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      padding: 20px;
+      background: rgba(5, 8, 20, 0.9);
+      border: 2px solid rgba(0, 255, 255, 0.3);
+      backdrop-filter: blur(10px);
+      min-width: 200px;
+    }
+
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-family: 'VT323', monospace;
+      font-size: 16px;
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+    }
+
+    .stat-value {
+      color: var(--neon-cyan);
+      font-weight: 700;
+      text-shadow: 0 0 10px var(--neon-cyan);
+    }
+
+    /* Quick actions */
+    .quick-actions {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .quick-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(5, 8, 20, 0.9);
+      border: 2px solid var(--neon-purple);
+      color: var(--neon-purple);
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 20px rgba(191, 0, 255, 0.3);
+    }
+
+    .quick-btn:hover {
+      background: var(--neon-purple);
+      color: var(--darker-bg);
+      box-shadow: 0 0 30px var(--neon-purple);
+      transform: scale(1.1);
+    }
+
+    /* Status update modal */
+    .status-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .status-modal.active {
+      display: flex;
+    }
+
+    .status-modal-content {
+      max-width: 500px;
+      width: 90%;
+      padding: 40px;
+    }
+
+    .status-options {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .status-option {
+      padding: 20px;
+      background: rgba(5, 8, 20, 0.6);
+      border: 2px solid rgba(0, 255, 255, 0.3);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'VT323', monospace;
+      font-size: 18px;
+    }
+
+    .status-option:hover {
+      background: rgba(0, 255, 255, 0.1);
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+    }
+
+    @media (max-width: 768px) {
+      .top-bar-content {
+        flex-direction: column;
+      }
+
+      .stats-panel {
+        bottom: 10px;
+        left: 10px;
+        padding: 15px;
+        min-width: 150px;
+      }
+
+      .quick-actions {
+        bottom: 10px;
+        right: 10px;
+      }
+
+      .quick-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-grid"></div>
+
+  <div class="galaxy-container">
+    <!-- Top bar -->
+    <div class="top-bar">
+      <div class="top-bar-content">
+        <div class="logo-small">HACKVIBE</div>
+
+        <div class="filter-tags" id="filter-tags">
+          <div class="tag active" data-filter="all">全部</div>
+          <div class="tag" data-filter="frontend">求前端</div>
+          <div class="tag" data-filter="backend">求后端</div>
+          <div class="tag" data-filter="ai">AI/ML</div>
+          <div class="tag" data-filter="design">求设计</div>
+          <div class="tag" data-filter="mentor">求大佬</div>
+        </div>
+
+        <div class="status-bar">
+          <div class="user-status" id="update-status">
+            <span class="status-dot online"></span>
+            <span id="current-status">可勾搭</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Radar visualization -->
+    <div class="radar-container">
+      <div class="radar-ring"></div>
+      <div class="radar-ring"></div>
+      <div class="radar-ring"></div>
+      <div class="radar-sweep"></div>
+    </div>
+
+    <!-- User bubbles container -->
+    <div id="bubbles-container"></div>
+
+    <!-- Stats panel -->
+    <div class="stats-panel pixel-corner">
+      <div class="stat-item">
+        <span class="stat-label">在线人数</span>
+        <span class="stat-value" id="online-count">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">高匹配度</span>
+        <span class="stat-value" id="match-count">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">当前筛选</span>
+        <span class="stat-value" id="current-filter">全部</span>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="quick-actions">
+      <div class="quick-btn" onclick="window.location.href='gacha.html'" title="命运扭蛋机">
+        🎰
+      </div>
+      <div class="quick-btn" onclick="refreshGalaxy()" title="刷新">
+        🔄
+      </div>
+    </div>
+  </div>
+
+  <!-- Status update modal -->
+  <div class="status-modal" id="status-modal">
+    <div class="status-modal-content cyber-card pixel-corner">
+      <h2 style="font-family: 'Orbitron', monospace; color: var(--neon-cyan); margin-bottom: 20px; text-align: center;">
+        更新你的状态
+      </h2>
+
+      <div class="status-options">
+        <div class="status-option" data-status="可勾搭">
+          <span class="status-dot online"></span> 可勾搭 - 欢迎来聊
+        </div>
+        <div class="status-option" data-status="正在修Bug">
+          <span class="status-dot busy"></span> 正在修Bug - 勿扰
+        </div>
+        <div class="status-option" data-status="急需前端大佬">
+          <span class="status-dot away"></span> 急需前端大佬
+        </div>
+        <div class="status-option" data-status="求懂AI的人">
+          <span class="status-dot away"></span> 求懂AI的人
+        </div>
+        <div class="status-option" data-status="去吃夜宵了">
+          <span class="status-dot busy"></span> 去吃夜宵了
+        </div>
+      </div>
+
+      <button class="neon-btn" style="width: 100%;" onclick="closeStatusModal()">
+        取消
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Mock user data
+    const mockUsers = [
+      { id: 1, name: '疯狂的诗人', status: 'online', statusText: '求设计师', match: 'high', skills: ['React', 'AI'] },
+      { id: 2, name: '忧郁的码农', status: 'busy', statusText: '正在Debug', match: 'medium', skills: ['Python', 'Backend'] },
+      { id: 3, name: '死掉的歌手', status: 'online', statusText: '可勾搭', match: 'high', skills: ['Frontend', 'Design'] },
+      { id: 4, name: '量子纠缠体', status: 'away', statusText: '吃饭中', match: 'low', skills: ['Quantum'] },
+      { id: 5, name: '后生可畏', status: 'online', statusText: '求带飞', match: 'high', skills: ['AI', 'ML'] },
+      { id: 6, name: 'Bug终结者', status: 'online', statusText: '可以指导', match: 'medium', skills: ['Backend', 'DevOps'] },
+      { id: 7, name: '像素艺术家', status: 'busy', statusText: '做UI中', match: 'low', skills: ['Design', 'Frontend'] },
+      { id: 8, name: '数据炼金术士', status: 'online', statusText: '求前端', match: 'high', skills: ['AI', 'Data'] },
+      { id: 9, name: '赛博游侠', status: 'away', statusText: '休息中', match: 'medium', skills: ['Security'] },
+      { id: 10, name: '代码诗人', status: 'online', statusText: '写诗中', match: 'low', skills: ['All'] },
+    ];
+
+    let currentFilter = 'all';
+    const container = document.getElementById('bubbles-container');
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+
+    // Load persona
+    const persona = JSON.parse(localStorage.getItem('persona') || '{}');
+
+    function createBubbles() {
+      container.innerHTML = '';
+
+      // Create self bubble (center)
+      const selfBubble = document.createElement('div');
+      selfBubble.className = 'bubble self';
+      selfBubble.style.left = `${centerX - 50}px`;
+      selfBubble.style.top = `${centerY - 50}px`;
+      selfBubble.innerHTML = `
+        <div class="bubble-avatar">${persona.nickname?.[0] || 'ME'}</div>
+        <div class="bubble-name">${persona.nickname || 'You'}</div>
+      `;
+      container.appendChild(selfBubble);
+
+      // Create other user bubbles
+      mockUsers.forEach((user, index) => {
+        const angle = (index / mockUsers.length) * 2 * Math.PI;
+        const radius = 200 + Math.random() * 150;
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius;
+
+        const bubble = document.createElement('div');
+        bubble.className = `bubble ${user.status} ${user.match}-match`;
+        bubble.style.left = `${x - 35}px`;
+        bubble.style.top = `${y - 35}px`;
+        bubble.style.animationDelay = `${index * 0.2}s`;
+
+        bubble.innerHTML = `
+          <div class="bubble-avatar">${user.name[0]}</div>
+          <div class="bubble-name">${user.name}</div>
+          <div class="bubble-status">${user.statusText}</div>
+        `;
+
+        bubble.addEventListener('click', () => {
+          localStorage.setItem('selectedUser', JSON.stringify(user));
+          window.location.href = 'profile.html';
+        });
+
+        container.appendChild(bubble);
+      });
+
+      updateStats();
+    }
+
+    function updateStats() {
+      document.getElementById('online-count').textContent = mockUsers.filter(u => u.status === 'online').length + 1;
+      document.getElementById('match-count').textContent = mockUsers.filter(u => u.match === 'high').length;
+      document.getElementById('current-filter').textContent = currentFilter === 'all' ? '全部' : currentFilter;
+    }
+
+    // Filter functionality
+    const filterTags = document.querySelectorAll('#filter-tags .tag');
+    filterTags.forEach(tag => {
+      tag.addEventListener('click', () => {
+        filterTags.forEach(t => t.classList.remove('active'));
+        tag.classList.add('active');
+        currentFilter = tag.dataset.filter;
+        updateStats();
+      });
+    });
+
+    // Status update
+    const statusModal = document.getElementById('status-modal');
+    document.getElementById('update-status').addEventListener('click', () => {
+      statusModal.classList.add('active');
+    });
+
+    function closeStatusModal() {
+      statusModal.classList.remove('active');
+    }
+
+    document.querySelectorAll('.status-option').forEach(option => {
+      option.addEventListener('click', () => {
+        const status = option.dataset.status;
+        document.getElementById('current-status').textContent = status;
+        closeStatusModal();
+      });
+    });
+
+    function refreshGalaxy() {
+      createBubbles();
+    }
+
+    // Initialize
+    createBubbles();
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      createBubbles();
+    });
+  </script>
+</body>
+</html>

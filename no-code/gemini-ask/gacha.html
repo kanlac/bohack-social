@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>命运扭蛋机 | HackVibe</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .gacha-container {
+      min-height: 100vh;
+      padding: 80px 20px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .back-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      padding: 12px 25px;
+      background: rgba(5, 8, 20, 0.9);
+      border: 2px solid rgba(0, 255, 255, 0.3);
+      color: var(--neon-cyan);
+      font-family: 'Orbitron', monospace;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 100;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .back-btn:hover {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+      transform: translateX(-5px);
+    }
+
+    /* Floating stars background */
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: var(--neon-cyan);
+      box-shadow: 0 0 10px var(--neon-cyan);
+      animation: twinkle 3s ease-in-out infinite;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.5); }
+    }
+
+    .gacha-main {
+      max-width: 800px;
+      width: 100%;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* Header */
+    .gacha-header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    .gacha-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 36px;
+      color: var(--neon-pink);
+      text-shadow:
+        0 0 20px var(--neon-pink),
+        0 0 40px var(--neon-pink);
+      margin-bottom: 20px;
+      letter-spacing: 3px;
+      line-height: 1.5;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .gacha-subtitle {
+      font-family: 'VT323', monospace;
+      font-size: 24px;
+      color: var(--text-secondary);
+      letter-spacing: 2px;
+    }
+
+    /* Gacha machine */
+    .gacha-machine {
+      text-align: center;
+      margin-bottom: 50px;
+      position: relative;
+    }
+
+    .machine-visual {
+      width: 300px;
+      height: 350px;
+      margin: 0 auto 40px;
+      position: relative;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .machine-body {
+      width: 100%;
+      height: 250px;
+      background: linear-gradient(135deg, rgba(191, 0, 255, 0.2), rgba(0, 255, 255, 0.2));
+      border: 4px solid var(--neon-purple);
+      border-radius: 20px;
+      position: relative;
+      box-shadow:
+        0 0 30px rgba(191, 0, 255, 0.5),
+        inset 0 0 30px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .machine-body::before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 150px;
+      height: 150px;
+      background: radial-gradient(circle, rgba(0, 255, 255, 0.3), transparent);
+      border-radius: 50%;
+      border: 3px solid var(--neon-cyan);
+      box-shadow: 0 0 30px var(--neon-cyan);
+    }
+
+    .machine-display {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'VT323', monospace;
+      font-size: 48px;
+      color: var(--neon-cyan);
+      text-shadow: 0 0 20px var(--neon-cyan);
+    }
+
+    .machine-slot {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 40px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid var(--neon-cyan);
+      border-radius: 10px;
+    }
+
+    .machine-lever {
+      position: absolute;
+      bottom: 0;
+      right: -40px;
+      width: 30px;
+      height: 150px;
+      background: linear-gradient(to bottom, var(--neon-pink), var(--neon-purple));
+      border-radius: 15px;
+      box-shadow: 0 0 20px var(--neon-pink);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .machine-lever::before {
+      content: '';
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 50px;
+      background: var(--neon-pink);
+      border-radius: 50%;
+      box-shadow: 0 0 30px var(--neon-pink);
+    }
+
+    .machine-lever:hover {
+      transform: translateY(10px);
+      box-shadow: 0 0 40px var(--neon-pink);
+    }
+
+    .machine-lever.active {
+      animation: pull-lever 0.5s ease;
+    }
+
+    @keyframes pull-lever {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(50px); }
+    }
+
+    /* Pull button */
+    .pull-btn {
+      padding: 25px 60px;
+      font-size: 24px;
+      background: linear-gradient(45deg, var(--neon-pink), var(--neon-purple));
+      border: none;
+      box-shadow: 0 0 40px rgba(255, 0, 255, 0.6);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pull-btn::after {
+      content: '🎰';
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 28px;
+    }
+
+    .pull-btn:hover {
+      box-shadow: 0 0 60px rgba(255, 0, 255, 0.9);
+      animation: shake 0.5s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px) rotate(-2deg); }
+      75% { transform: translateX(5px) rotate(2deg); }
+    }
+
+    .pull-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      animation: none;
+    }
+
+    /* Results */
+    .results-container {
+      display: none;
+      margin-top: 50px;
+    }
+
+    .results-container.active {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .result-card {
+      background: var(--card-bg);
+      border: 3px solid;
+      padding: 30px;
+      margin-bottom: 25px;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      animation: slideIn 0.5s ease backwards;
+    }
+
+    .result-card:nth-child(1) {
+      border-color: var(--neon-yellow);
+      box-shadow: 0 0 30px rgba(255, 255, 0, 0.4);
+      animation-delay: 0.2s;
+    }
+
+    .result-card:nth-child(2) {
+      border-color: var(--neon-purple);
+      box-shadow: 0 0 30px rgba(191, 0, 255, 0.4);
+      animation-delay: 0.4s;
+    }
+
+    .result-card:nth-child(3) {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
+      animation-delay: 0.6s;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .result-card:hover {
+      transform: translateX(10px);
+      box-shadow: 0 0 50px currentColor;
+    }
+
+    .result-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: left 0.5s;
+    }
+
+    .result-card:hover::before {
+      left: 100%;
+    }
+
+    .rarity-badge {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      padding: 8px 20px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 10px;
+      border: 2px solid;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      box-shadow: 0 0 15px currentColor;
+    }
+
+    .rarity-ssr {
+      color: var(--neon-yellow);
+      border-color: var(--neon-yellow);
+      background: rgba(255, 255, 0, 0.1);
+    }
+
+    .rarity-sr {
+      color: var(--neon-purple);
+      border-color: var(--neon-purple);
+      background: rgba(191, 0, 255, 0.1);
+    }
+
+    .rarity-r {
+      color: var(--neon-cyan);
+      border-color: var(--neon-cyan);
+      background: rgba(0, 255, 255, 0.1);
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .result-avatar {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', monospace;
+      font-size: 36px;
+      font-weight: 700;
+      box-shadow: 0 0 30px currentColor;
+    }
+
+    .result-info h3 {
+      font-family: 'Orbitron', monospace;
+      font-size: 28px;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+    }
+
+    .result-info p {
+      font-family: 'VT323', monospace;
+      font-size: 18px;
+      color: var(--text-secondary);
+    }
+
+    .match-reason {
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.4);
+      border-left: 4px solid currentColor;
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      line-height: 1.6;
+      color: var(--text-primary);
+      margin-bottom: 20px;
+    }
+
+    .result-tags {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .result-tag {
+      padding: 8px 16px;
+      background: rgba(0, 255, 255, 0.1);
+      border: 1px solid currentColor;
+      font-family: 'VT323', monospace;
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+
+    /* Fortune text */
+    .fortune-text {
+      text-align: center;
+      margin-top: 30px;
+      padding: 25px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 2px solid var(--neon-purple);
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      color: var(--neon-purple);
+      line-height: 1.8;
+      font-style: italic;
+    }
+
+    /* Spinning animation */
+    .spinning {
+      animation: spin 0.5s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+      .gacha-title {
+        font-size: 24px;
+      }
+
+      .machine-visual {
+        width: 250px;
+        height: 300px;
+      }
+
+      .pull-btn {
+        padding: 20px 40px;
+        font-size: 18px;
+      }
+
+      .result-header {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-grid"></div>
+
+  <!-- Floating stars -->
+  <script>
+    for (let i = 0; i < 50; i++) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 100 + '%';
+      star.style.animationDelay = Math.random() * 3 + 's';
+      document.body.appendChild(star);
+    }
+  </script>
+
+  <a href="galaxy.html" class="back-btn">
+    <span>←</span>
+    <span>返回星图</span>
+  </a>
+
+  <div class="gacha-container">
+    <div class="gacha-main">
+      <!-- Header -->
+      <div class="gacha-header">
+        <h1 class="gacha-title">命运扭蛋机</h1>
+        <p class="gacha-subtitle">[ 让算法为你指引贵人 ]</p>
+      </div>
+
+      <!-- Gacha machine visual -->
+      <div class="gacha-machine">
+        <div class="machine-visual">
+          <div class="machine-body">
+            <div class="machine-display" id="machine-display">?</div>
+            <div class="machine-slot"></div>
+          </div>
+          <div class="machine-lever" id="lever"></div>
+        </div>
+
+        <button class="neon-btn pull-btn" id="pull-btn">
+          抽取今日缘分
+        </button>
+      </div>
+
+      <!-- Results -->
+      <div class="results-container" id="results">
+        <!-- Generated dynamically -->
+      </div>
+
+      <!-- Fortune text -->
+      <div class="fortune-text" id="fortune" style="display: none;">
+        "在代码的海洋中，总有人能成为你的灯塔"
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const pullBtn = document.getElementById('pull-btn');
+    const lever = document.getElementById('lever');
+    const machineDisplay = document.getElementById('machine-display');
+    const resultsContainer = document.getElementById('results');
+    const fortuneText = document.getElementById('fortune');
+
+    // Mock users database
+    const userPool = [
+      { name: '疯狂的诗人', title: '全栈魔法师', skills: ['React', 'Node.js', 'Poetry'], need: '求设计师一起做诗歌可视化' },
+      { name: '忧郁的码农', title: '深夜调试大师', skills: ['Python', 'Django', 'Debug'], need: '想找人一起吐槽产品经理' },
+      { name: '死掉的歌手', title: '音乐算法师', skills: ['ML', 'Audio Processing'], need: '寻找音乐+科技的同好' },
+      { name: '量子纠缠体', title: '量子计算先驱', skills: ['Quantum', 'Physics', 'Math'], need: '想聊聊量子纠错' },
+      { name: '后生可畏', title: '未来图灵奖得主', skills: ['Everything', 'Curiosity'], need: '求大佬带我飞' },
+      { name: 'Bug终结者', title: '代码守护者', skills: ['Testing', 'DevOps'], need: '可以帮忙 Code Review' },
+      { name: '像素艺术家', title: '8-bit 创作者', skills: ['Design', 'Pixel Art'], need: '寻找复古游戏爱好者' },
+      { name: '数据炼金术士', title: 'AI 训练师', skills: ['TensorFlow', 'PyTorch'], need: '求前端做可视化' },
+      { name: '赛博游侠', title: '白帽黑客', skills: ['Security', 'Penetration'], need: '一起研究漏洞' },
+      { name: '代码诗人', title: '优雅编程倡导者', skills: ['Clean Code', 'Architecture'], need: '寻找完美主义同伴' },
+    ];
+
+    const fortunes = [
+      '"根据星象（算法），这些人可能是你的贵人"',
+      '"在代码的海洋中，总有人能成为你的灯塔"',
+      '"缘分天注定，算法来牵线"',
+      '"今日运势：贵人运爆棚，适合社交"',
+      '"Bug 虽多，但有人陪你一起修"'
+    ];
+
+    const matchReasons = [
+      '你们的技术栈高度互补，可以互相学习',
+      '都是深夜工作者，惺惺相惜',
+      '兴趣爱好相似，有很多共同话题',
+      '一个需要帮助，一个愿意分享，完美匹配',
+      '都是完美主义者，可以一起追求极致',
+      '互补型选手，你的弱项正是 TA 的强项'
+    ];
+
+    pullBtn.addEventListener('click', pullGacha);
+
+    function pullGacha() {
+      // Disable button
+      pullBtn.disabled = true;
+      pullBtn.textContent = '抽取中...';
+
+      // Lever animation
+      lever.classList.add('active');
+      setTimeout(() => lever.classList.remove('active'), 500);
+
+      // Spinning display
+      machineDisplay.classList.add('spinning');
+      let counter = 0;
+      const spinInterval = setInterval(() => {
+        machineDisplay.textContent = Math.floor(Math.random() * 10);
+      }, 100);
+
+      // Stop after 2 seconds
+      setTimeout(() => {
+        clearInterval(spinInterval);
+        machineDisplay.classList.remove('spinning');
+        machineDisplay.textContent = '✓';
+
+        // Show results
+        showResults();
+
+        // Re-enable button
+        pullBtn.disabled = false;
+        pullBtn.textContent = '再抽一次';
+      }, 2000);
+    }
+
+    function showResults() {
+      // Randomly pick 3 users
+      const shuffled = [...userPool].sort(() => Math.random() - 0.5);
+      const selected = shuffled.slice(0, 3);
+
+      // Assign rarity
+      const rarities = ['ssr', 'sr', 'r'];
+      const rarityLabels = ['SSR', 'SR', 'R'];
+
+      resultsContainer.innerHTML = selected.map((user, index) => `
+        <div class="result-card" onclick="viewProfile('${user.name}')">
+          <div class="rarity-badge rarity-${rarities[index]}">${rarityLabels[index]}</div>
+
+          <div class="result-header">
+            <div class="result-avatar">${user.name[0]}</div>
+            <div class="result-info">
+              <h3>${user.name}</h3>
+              <p>『 ${user.title} 』</p>
+            </div>
+          </div>
+
+          <div class="match-reason">
+            💡 匹配理由：${matchReasons[Math.floor(Math.random() * matchReasons.length)]}
+          </div>
+
+          <div class="result-tags">
+            ${user.skills.map(skill => `<div class="result-tag">${skill}</div>`).join('')}
+          </div>
+
+          <div style="margin-top: 15px; font-family: 'VT323', monospace; font-size: 16px; color: var(--text-secondary);">
+            📢 ${user.need}
+          </div>
+        </div>
+      `).join('');
+
+      resultsContainer.classList.add('active');
+
+      // Show fortune
+      fortuneText.textContent = fortunes[Math.floor(Math.random() * fortunes.length)];
+      fortuneText.style.display = 'block';
+    }
+
+    function viewProfile(name) {
+      const user = userPool.find(u => u.name === name);
+      if (user) {
+        // Convert to expected format
+        const userData = {
+          name: user.name,
+          statusText: user.need,
+          skills: user.skills,
+          status: 'online'
+        };
+        localStorage.setItem('selectedUser', JSON.stringify(userData));
+        window.location.href = 'profile.html';
+      }
+    }
+
+    // Shake animation on lever click
+    lever.addEventListener('click', () => {
+      if (!pullBtn.disabled) {
+        pullGacha();
+      }
+    });
+  </script>
+</body>
+</html>

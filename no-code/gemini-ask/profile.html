@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>黑客身份卡 | HackVibe</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .profile-container {
+      min-height: 100vh;
+      padding: 80px 20px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .back-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      padding: 12px 25px;
+      background: rgba(5, 8, 20, 0.9);
+      border: 2px solid rgba(0, 255, 255, 0.3);
+      color: var(--neon-cyan);
+      font-family: 'Orbitron', monospace;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 100;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .back-btn:hover {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+      transform: translateX(-5px);
+    }
+
+    .profile-card {
+      max-width: 700px;
+      width: 100%;
+      position: relative;
+    }
+
+    /* Holographic effect */
+    .holo-card {
+      position: relative;
+      background: linear-gradient(
+        135deg,
+        rgba(15, 20, 40, 0.95) 0%,
+        rgba(10, 14, 39, 0.95) 100%
+      );
+      border: 3px solid;
+      border-image: linear-gradient(45deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink)) 1;
+      padding: 50px;
+      overflow: hidden;
+    }
+
+    .holo-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(0, 255, 255, 0.1) 50%,
+        transparent 70%
+      );
+      animation: holo-shift 3s linear infinite;
+    }
+
+    @keyframes holo-shift {
+      0% { transform: translateX(-100%) translateY(-100%) rotate(0deg); }
+      100% { transform: translateX(100%) translateY(100%) rotate(360deg); }
+    }
+
+    /* Header section */
+    .profile-header {
+      text-align: center;
+      margin-bottom: 40px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .avatar-large {
+      width: 150px;
+      height: 150px;
+      margin: 0 auto 25px;
+      background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan), var(--neon-pink));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', monospace;
+      font-size: 60px;
+      font-weight: 900;
+      color: var(--darker-bg);
+      box-shadow: 0 0 40px rgba(0, 255, 255, 0.6);
+      position: relative;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .avatar-large::after {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      right: -10px;
+      bottom: -10px;
+      border-radius: 50%;
+      border: 2px solid var(--neon-cyan);
+      animation: rotate-scan 4s linear infinite;
+    }
+
+    .profile-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 28px;
+      color: var(--neon-pink);
+      margin-bottom: 15px;
+      text-shadow: 0 0 20px var(--neon-pink);
+      line-height: 1.6;
+      animation: glitch-text 2s infinite;
+    }
+
+    @keyframes glitch-text {
+      0%, 90%, 100% { opacity: 1; }
+      95% { opacity: 0.8; transform: translateX(2px); }
+    }
+
+    .profile-name {
+      font-family: 'Orbitron', monospace;
+      font-size: 32px;
+      color: var(--neon-cyan);
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .profile-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 25px;
+      background: rgba(0, 255, 65, 0.1);
+      border: 2px solid var(--neon-green);
+      border-radius: 25px;
+      font-family: 'VT323', monospace;
+      font-size: 18px;
+      color: var(--neon-green);
+    }
+
+    /* Section */
+    .profile-section {
+      margin-bottom: 35px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .section-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 16px;
+      color: var(--neon-cyan);
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title::before {
+      content: '▸';
+      color: var(--neon-purple);
+      font-size: 20px;
+    }
+
+    .skills-grid {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .skill-badge {
+      padding: 12px 20px;
+      background: rgba(191, 0, 255, 0.15);
+      border: 2px solid var(--neon-purple);
+      color: var(--neon-purple);
+      font-family: 'VT323', monospace;
+      font-size: 18px;
+      text-transform: uppercase;
+      box-shadow: 0 0 15px rgba(191, 0, 255, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .skill-badge:hover {
+      background: var(--neon-purple);
+      color: var(--darker-bg);
+      box-shadow: 0 0 25px var(--neon-purple);
+      transform: translateY(-2px);
+    }
+
+    .needs-text {
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      color: var(--text-primary);
+      line-height: 1.6;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.3);
+      border-left: 4px solid var(--neon-yellow);
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Ice breaker */
+    .ice-breaker {
+      padding: 25px;
+      background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(191, 0, 255, 0.1));
+      border: 2px solid var(--neon-cyan);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ice-breaker::before {
+      content: '💡';
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 30px;
+      animation: float 2s ease-in-out infinite;
+    }
+
+    .ice-breaker-label {
+      font-family: 'Orbitron', monospace;
+      font-size: 14px;
+      color: var(--neon-cyan);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+    }
+
+    .ice-breaker-text {
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    /* Stickers section */
+    .stickers-section {
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 2px solid rgba(0, 255, 255, 0.2);
+    }
+
+    .stickers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .sticker {
+      aspect-ratio: 1;
+      background: rgba(5, 8, 20, 0.6);
+      border: 2px solid rgba(0, 255, 255, 0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 10px;
+    }
+
+    .sticker:hover {
+      background: rgba(0, 255, 255, 0.1);
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+      transform: scale(1.1) rotate(5deg);
+    }
+
+    .sticker-emoji {
+      font-size: 40px;
+      margin-bottom: 5px;
+    }
+
+    .sticker-label {
+      font-family: 'VT323', monospace;
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+
+    /* Action buttons */
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      margin-top: 40px;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 18px;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(45deg, var(--neon-cyan), var(--neon-purple));
+      border: none;
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+    }
+
+    .action-btn.secondary {
+      background: transparent;
+      border: 2px solid var(--neon-pink);
+      color: var(--neon-pink);
+      box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
+    }
+
+    .action-btn.secondary:hover {
+      background: rgba(255, 0, 255, 0.1);
+      box-shadow: 0 0 25px rgba(255, 0, 255, 0.5);
+    }
+
+    /* Floating barcode */
+    .barcode-deco {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 100px;
+      opacity: 0.3;
+    }
+
+    /* Danmaku (scrolling text) */
+    .danmaku-container {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      overflow: hidden;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    .danmaku {
+      position: absolute;
+      white-space: nowrap;
+      font-family: 'VT323', monospace;
+      font-size: 16px;
+      color: var(--neon-cyan);
+      text-shadow: 0 0 10px var(--neon-cyan);
+      animation: scroll-left 15s linear infinite;
+    }
+
+    @keyframes scroll-left {
+      0% { transform: translateX(100vw); }
+      100% { transform: translateX(-100%); }
+    }
+
+    @media (max-width: 768px) {
+      .profile-card {
+        padding: 20px;
+      }
+
+      .holo-card {
+        padding: 30px 20px;
+      }
+
+      .profile-title {
+        font-size: 18px;
+      }
+
+      .profile-name {
+        font-size: 24px;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-grid"></div>
+
+  <a href="galaxy.html" class="back-btn">
+    <span>←</span>
+    <span>返回星图</span>
+  </a>
+
+  <div class="profile-container">
+    <div class="profile-card">
+      <div class="holo-card pixel-corner">
+        <!-- Danmaku effect -->
+        <div class="danmaku-container">
+          <div class="danmaku" style="top: 20%;">为了部落！为了荣耀！</div>
+          <div class="danmaku" style="top: 60%; animation-delay: 5s;">内存溢出了救命救命</div>
+        </div>
+
+        <!-- Header -->
+        <div class="profile-header">
+          <div class="avatar-large" id="avatar">?</div>
+          <div class="profile-title" id="title">『 未知称号 』</div>
+          <h2 class="profile-name" id="name">神秘黑客</h2>
+          <div class="profile-status">
+            <span class="status-dot online"></span>
+            <span id="status">可勾搭</span>
+          </div>
+        </div>
+
+        <!-- Skills -->
+        <div class="profile-section">
+          <div class="section-title">硬核技能</div>
+          <div class="skills-grid" id="skills">
+            <!-- Generated dynamically -->
+          </div>
+        </div>
+
+        <!-- Current needs -->
+        <div class="profile-section">
+          <div class="section-title">当前需求</div>
+          <div class="needs-text" id="needs">
+            加载中...
+          </div>
+        </div>
+
+        <!-- Ice breaker -->
+        <div class="profile-section">
+          <div class="ice-breaker">
+            <div class="ice-breaker-label">🤖 AI 破冰建议</div>
+            <div class="ice-breaker-text" id="ice-breaker">
+              分析中...
+            </div>
+          </div>
+        </div>
+
+        <!-- Stickers -->
+        <div class="stickers-section">
+          <div class="section-title">发个贴纸 (低压力社交)</div>
+          <div class="stickers-grid">
+            <div class="sticker" onclick="sendSticker('膜拜')">
+              <div class="sticker-emoji">🙇</div>
+              <div class="sticker-label">膜拜大佬</div>
+            </div>
+            <div class="sticker" onclick="sendSticker('同病相怜')">
+              <div class="sticker-emoji">🤝</div>
+              <div class="sticker-label">同病相怜</div>
+            </div>
+            <div class="sticker" onclick="sendSticker('想抱抱')">
+              <div class="sticker-emoji">🤗</div>
+              <div class="sticker-label">想抱抱</div>
+            </div>
+            <div class="sticker" onclick="sendSticker('666')">
+              <div class="sticker-emoji">🔥</div>
+              <div class="sticker-label">6666</div>
+            </div>
+            <div class="sticker" onclick="sendSticker('一起吃夜宵')">
+              <div class="sticker-emoji">🍜</div>
+              <div class="sticker-label">一起吃</div>
+            </div>
+            <div class="sticker" onclick="sendSticker('加油')">
+              <div class="sticker-emoji">💪</div>
+              <div class="sticker-label">加油鸭</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="action-buttons">
+          <button class="neon-btn action-btn primary" onclick="connectUser()">
+            添加联系方式
+          </button>
+          <button class="neon-btn action-btn secondary" onclick="window.location.href='galaxy.html'">
+            返回星图
+          </button>
+        </div>
+
+        <!-- Decorative barcode -->
+        <div class="barcode-deco">
+          <div class="barcode">
+            <span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Load selected user
+    const user = JSON.parse(localStorage.getItem('selectedUser') || '{}');
+
+    // Populate profile
+    document.getElementById('avatar').textContent = user.name?.[0] || '?';
+    document.getElementById('name').textContent = user.name || '未知用户';
+    document.getElementById('status').textContent = user.statusText || '离线';
+
+    // Generate random title
+    const titles = [
+      '全自动反驳型人格',
+      '未来的图灵奖备选人',
+      '赛博空间游牧者',
+      '后生可畏',
+      '疯狂的诗人',
+      '忧郁的码农',
+      '死掉的歌手',
+      '量子纠缠体',
+      'Bug终结者',
+      '像素艺术家'
+    ];
+    const randomTitle = titles[Math.floor(Math.random() * titles.length)];
+    document.getElementById('title').textContent = `『 ${randomTitle} 』`;
+
+    // Skills
+    const skillsContainer = document.getElementById('skills');
+    if (user.skills && user.skills.length > 0) {
+      skillsContainer.innerHTML = user.skills.map(skill =>
+        `<div class="skill-badge">${skill}</div>`
+      ).join('');
+    } else {
+      skillsContainer.innerHTML = '<div class="skill-badge">Full Stack</div><div class="skill-badge">AI</div>';
+    }
+
+    // Needs
+    const needs = [
+      '急需一个懂 Next.js 的前端大佬，求救！',
+      '寻找脑机接口同好，一起做点疯狂的事情',
+      '求大佬指点方向，完全不知道从哪开始',
+      '需要会设计的小伙伴，我们的 UI 太丑了',
+      '找个会 Python 的帮忙训练模型'
+    ];
+    document.getElementById('needs').textContent = needs[Math.floor(Math.random() * needs.length)];
+
+    // Ice breaker
+    const iceBreakers = [
+      `去问问 TA 关于 ${user.skills?.[0] || 'AI'} 的事，看起来很懂的样子`,
+      '可以聊聊黑客松的吐槽，你们可能有共同话题',
+      '推荐一起去吃夜宵，边吃边聊技术方案',
+      `问问 TA 用什么 IDE，程序员都喜欢讨论这个`,
+      '可以请教一下项目遇到的 Bug，说不定 TA 能帮上忙'
+    ];
+    document.getElementById('ice-breaker').textContent = iceBreakers[Math.floor(Math.random() * iceBreakers.length)];
+
+    function sendSticker(type) {
+      // Animate sticker send
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 30px 50px;
+        background: rgba(0, 255, 255, 0.95);
+        color: var(--darker-bg);
+        font-family: 'Orbitron', monospace;
+        font-size: 24px;
+        font-weight: 700;
+        border-radius: 10px;
+        box-shadow: 0 0 50px var(--neon-cyan);
+        z-index: 10000;
+        animation: fadeIn 0.3s ease;
+      `;
+      notification.textContent = `贴纸「${type}」已发送！`;
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.remove();
+      }, 2000);
+    }
+
+    function connectUser() {
+      // Show QR code modal (simplified)
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        animation: fadeIn 0.3s ease;
+      `;
+
+      modal.innerHTML = `
+        <div class="cyber-card pixel-corner" style="padding: 50px; text-align: center; max-width: 400px;">
+          <h2 style="font-family: 'Orbitron', monospace; color: var(--neon-cyan); margin-bottom: 30px;">
+            添加联系方式
+          </h2>
+          <div style="width: 200px; height: 200px; margin: 0 auto 30px; background: white; display: flex; align-items: center; justify-content: center; font-size: 80px;">
+            📱
+          </div>
+          <p style="font-family: 'VT323', monospace; font-size: 18px; color: var(--text-secondary); margin-bottom: 30px;">
+            扫描二维码添加微信<br>
+            (这里应该显示 ${user.name} 的二维码)
+          </p>
+          <button class="neon-btn" onclick="this.parentElement.parentElement.remove()" style="width: 100%;">
+            关闭
+          </button>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+    }
+  </script>
+</body>
+</html>
