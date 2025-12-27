@@ -75,6 +75,7 @@ export default function AIChat({ formData, onComplete, onSkip }: Props) {
           console.log('✅ 问题加载成功')
           setAiQuestions(data.questions)
           setAnswers(new Array(data.questions.length).fill({ selectedOptions: [], customInput: '' }))
+          setLoadError(false)  // 成功时重置错误状态
           hasLoadedRef.current = true  // 只在成功后设置标志位
         } else {
           console.error('❌ 返回的问题格式不正确:', data)
