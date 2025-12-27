@@ -71,6 +71,7 @@ export default function Home() {
             className="w-full max-w-2xl"
           >
             <AIChat
+              formData={formData}
               onComplete={handleChatComplete}
               onSkip={handleSkipChat}
             />
