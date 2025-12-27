@@ -1,5 +1,6 @@
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
-import { generateText } from 'ai';
+import { generateObject } from 'ai';
+import { z } from 'zod';
 
 export const maxDuration = 60;
 
@@ -28,127 +29,86 @@ interface RequestData {
   user2: User;
 }
 
-// 生成 Agent Prompt
-function generateAgentPrompt(
-  user: User,
-  conversationHistory: Message[],
-  currentRole: 'user1' | 'user2',
-  isFirstMessage: boolean
-): string {
-  const historyText = conversationHistory
-    .map((msg) => {
-      const speaker = msg.role === currentRole ? '你' : '对方';
-      return `${speaker}: ${msg.content}`;
+// 定义对话的 Zod Schema
+const ConversationSchema = z.object({
+  messages: z.array(
+    z.object({
+      role: z.enum(['user1', 'user2']),
+      content: z.string().min(10).max(500),
     })
-    .join('\n');
-
-  const context = isFirstMessage
-    ? '这是对话的开始，请主动打个招呼并简单介绍自己。'
-    : `对话历史：
-${historyText}
-
-请自然地回应对方的话，继续这段对话。`;
-
-  return `你现在要扮演一个黑客松参与者的数字分身，代表这个人和另一个参与者聊天。
-
-你的角色信息：
-- 称号：${user.title}
-- emoji：${user.emoji}
-- 正在做的项目：${user.project}
-${user.bio ? `- 个性签名：${user.bio}` : ''}
-${user.interests && user.interests.length > 0 ? `- 感兴趣的话题：${user.interests.join('、')}` : ''}
-${user.moods && user.moods.length > 0 ? `- 当前状态：${user.moods.join('、')}` : ''}
-
-${context}
-
-要求：
-1. 保持角色特点，语气符合你的称号和状态
-2. 内容自然、有趣，像真实的人在聊天
-3. 每次回复2-3句话，不要太长
-4. 围绕共同兴趣和项目展开讨论
-5. 直接输出对话内容，不要包含任何前缀或标记`;
-}
+  ).length(8), // 8 轮对话，精炼而充分
+});
 
 export async function POST(req: Request) {
   try {
     const { user1, user2 }: RequestData = await req.json();
 
-    const conversation: Message[] = [];
-    const totalRounds = 12; // 生成12轮对话
+    // 构建 prompt - 必须包含 "json" 关键词
+    const prompt = `你是一个黑客松社交助手，需要模拟两个参与者的数字分身进行对话。请生成一段自然、有趣的对话，以 JSON 格式输出。
 
-    // 轮流生成对话
-    for (let i = 0; i < totalRounds; i++) {
-      const currentRole = i % 2 === 0 ? 'user1' : 'user2';
-      const currentUser = currentRole === 'user1' ? user1 : user2;
-      const isFirstMessage = i === 0;
+## 参与者信息
 
-      // 生成 prompt
-      const prompt = generateAgentPrompt(
-        currentUser,
-        conversation,
-        currentRole,
-        isFirstMessage
-      );
+**User1（我）**：
+- 称号：${user1.title}
+- Emoji：${user1.emoji}
+- 项目：${user1.project}
+${user1.bio ? `- 签名：${user1.bio}` : ''}
+${user1.interests && user1.interests.length > 0 ? `- 兴趣：${user1.interests.join('、')}` : ''}
+${user1.moods && user1.moods.length > 0 ? `- 状态：${user1.moods.join('、')}` : ''}
 
-      // 调用 AI 生成消息
-      const { text } = await generateText({
-        model: qwen('qwen-plus'),
-        prompt: prompt,
-        temperature: 0.8, // 增加创意性
-      });
+**User2**：
+- 称号：${user2.title}
+- Emoji：${user2.emoji}
+- 项目：${user2.project}
+${user2.bio ? `- 签名：${user2.bio}` : ''}
+${user2.interests && user2.interests.length > 0 ? `- 兴趣：${user2.interests.join('、')}` : ''}
+${user2.moods && user2.moods.length > 0 ? `- 状态：${user2.moods.join('、')}` : ''}
 
-      // 清理 AI 返回的内容（去除可能的前缀）
-      const cleanedContent = text
-        .replace(/^(你好|嗨|哈喽|Hi|Hello)[，,、：:！!]\s*/i, '')
-        .trim();
+## 对话要求
 
-      // 添加到对话历史
-      conversation.push({
-        role: currentRole,
-        content: cleanedContent || text, // 如果清理后为空则使用原文
-      });
+1. **总共 8 轮对话**（user1 和 user2 轮流发言，各 4 次）
+2. **第 1 轮**：user1 主动打招呼并简单介绍自己
+3. **第 2-7 轮**：围绕以下话题自然展开：
+   - 各自的项目和技术栈
+   - 共同的兴趣点
+   - 可能的合作机会
+   - 当前遇到的挑战
+4. **第 8 轮**：user2 总结对话，表达合作意愿
+5. **语气风格**：
+   - 保持角色特点（符合称号和状态）
+   - 自然、友好、有趣
+   - 每条消息 2-3 句话，简洁有力
+   - 避免过于正式或机械
 
-      // 如果是最后几轮，添加结束提示
-      if (i === totalRounds - 2) {
-        // 倒数第二轮，提示即将结束
-        const nextRole = (i + 1) % 2 === 0 ? 'user1' : 'user2';
-        const nextUser = nextRole === 'user1' ? user1 : user2;
+## JSON 输出格式
 
-        const closingPrompt = `你现在要扮演一个黑客松参与者的数字分身，代表这个人和另一个参与者聊天。
+请直接输出 JSON 对象，格式如下：
 
-你的角色信息：
-- 称号：${nextUser.title}
-- emoji：${nextUser.emoji}
-- 正在做的项目：${nextUser.project}
-${nextUser.bio ? `- 个性签名：${nextUser.bio}` : ''}
+\`\`\`json
+{
+  "messages": [
+    {"role": "user1", "content": "user1 的第一条消息"},
+    {"role": "user2", "content": "user2 的回复"},
+    ...共 8 条消息
+  ]
+}
+\`\`\`
 
-对话历史：
-${conversation.map((msg) => `${msg.role === nextRole ? '你' : '对方'}: ${msg.content}`).join('\n')}
+现在请生成这段对话的 JSON 数据。`;
 
-这是对话的最后一轮，请自然地总结对话并表达期待未来合作的意愿。
+    // 使用 generateObject 生成结构化输出
+    const { object } = await generateObject({
+      model: qwen('qwen-plus'),
+      schema: ConversationSchema,
+      prompt: prompt,
+      temperature: 0.8, // 保持创意性
+    });
 
-要求：
-1. 保持角色特点，语气符合你的称号和状态
-2. 内容自然、有趣
-3. 2-3句话，不要太长
-4. 表达对这次对话的感受和对未来合作的期待
-5. 直接输出对话内容，不要包含任何前缀或标记`;
-
-        const { text: closingText } = await generateText({
-          model: qwen('qwen-plus'),
-          prompt: closingPrompt,
-          temperature: 0.8,
-        });
-
-        conversation.push({
-          role: nextRole,
-          content: closingText.trim(),
-        });
-
-        // 结束循环
-        break;
-      }
-    }
+    // 验证并返回结果
+    const conversation: Message[] = object.messages.map(msg => ({
+      role: msg.role as 'user1' | 'user2',
+      content: msg.content,
+    }));
 
     return Response.json({
       success: true,
