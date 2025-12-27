@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import AgentChatModal from '@/components/AgentChatModal'
 
 interface User {
   id: string
@@ -129,10 +130,19 @@ const ALL_INTERESTS = [
   '开源项目',
 ]
 
+// Mock 当前用户数据
+const CURRENT_USER = {
+  emoji: '🥷',
+  title: 'Code Ninja',
+  project: '在做一款 AI 聊天机器人'
+}
+
 export default function ExplorePageV2() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [selectedInterests, setSelectedInterests] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState('')
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false)
+  const [chatTargetUser, setChatTargetUser] = useState<User | null>(null)
 
   const filteredUsers = MOCK_USERS.filter(user => {
     const matchesInterests = selectedInterests.length === 0 ||
@@ -433,6 +443,10 @@ export default function ExplorePageV2() {
                     <motion.button
                       whileHover={{ scale: 1.02, y: -2 }}
                       whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        setChatTargetUser(selectedUser)
+                        setIsChatModalOpen(true)
+                      }}
                       className="flex-1 py-4 rounded-2xl bg-gradient-to-r from-hot-pink via-purple to-cyber-blue text-white font-bold shadow-lg hover:shadow-xl transition-shadow"
                     >
                       发起聊天 💬
@@ -451,6 +465,20 @@ export default function ExplorePageV2() {
           </>
         )}
       </AnimatePresence>
+
+      {/* Agent Chat Modal */}
+      {chatTargetUser && (
+        <AgentChatModal
+          isOpen={isChatModalOpen}
+          onClose={() => setIsChatModalOpen(false)}
+          user1={CURRENT_USER}
+          user2={{
+            emoji: chatTargetUser.emoji,
+            title: chatTargetUser.title,
+            project: chatTargetUser.project
+          }}
+        />
+      )}
     </div>
   )
 }
