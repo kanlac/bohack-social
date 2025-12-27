@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 
 interface FormData {
@@ -30,13 +30,23 @@ export default function ProfilePreview({ formData, answers }: Props) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const hasGeneratedRef = useRef(false)
 
   useEffect(() => {
-    const generateProfile = async () => {
+    // Prevent duplicate execution in React Strict Mode
+    if (hasGeneratedRef.current) {
+      return
+    }
+    hasGeneratedRef.current = true
+
+    const generateAndSaveProfile = async () => {
       try {
         setIsLoading(true)
         setError(false)
-        const response = await fetch('/api/generate-profile', {
+
+        // Step 1: Generate profile with AI
+        const generateResponse = await fetch('/api/generate-profile', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -44,20 +54,48 @@ export default function ProfilePreview({ formData, answers }: Props) {
           body: JSON.stringify({ formData, answers }),
         })
 
-        const data = await response.json()
-        if (data.error) {
-          throw new Error(data.error)
+        const profileData = await generateResponse.json()
+        if (profileData.error) {
+          throw new Error(profileData.error)
         }
-        setProfile(data)
+        setProfile(profileData)
+        setIsLoading(false)
+
+        // Step 2: Save profile to database
+        setIsSaving(true)
+        const saveResponse = await fetch('/api/save-profile', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            emoji: profileData.emoji,
+            title: profileData.title,
+            project: formData.project,
+            bio: profileData.bio,
+            interests: formData.interests,
+            moods: formData.moods,
+            wechat: formData.wechat,
+            answers: answers,
+          }),
+        })
+
+        const saveResult = await saveResponse.json()
+        if (saveResult.error) {
+          console.error('Failed to save profile:', saveResult.error)
+        } else {
+          console.log('Profile saved successfully:', saveResult.user)
+        }
       } catch (err) {
         console.error('Failed to generate profile:', err)
         setError(true)
       } finally {
         setIsLoading(false)
+        setIsSaving(false)
       }
     }
 
-    generateProfile()
+    generateAndSaveProfile()
   }, [formData, answers])
 
   // 加载中状态

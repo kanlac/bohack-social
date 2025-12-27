@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface FormData {
@@ -35,13 +35,21 @@ export default function AIChat({ formData, onComplete, onSkip }: Props) {
   const [aiQuestions, setAiQuestions] = useState<Question[]>([])
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(true)
   const [loadError, setLoadError] = useState(false)
+  const hasLoadedRef = useRef(false)
 
   useEffect(() => {
+    // Prevent duplicate execution in React Strict Mode
+    if (hasLoadedRef.current) {
+      return
+    }
+
     // 加载 AI 生成的问题
     const loadQuestions = async () => {
       try {
         setIsLoadingQuestions(true)
         setLoadError(false)
+
+        console.log('🔄 开始加载 AI 问题...')
         const response = await fetch('/api/generate-questions', {
           method: 'POST',
           headers: {
@@ -50,15 +58,25 @@ export default function AIChat({ formData, onComplete, onSkip }: Props) {
           body: JSON.stringify(formData),
         })
 
+        console.log('📡 API 响应状态:', response.status)
         const data = await response.json()
+        console.log('📦 API 返回数据:', data)
+
+        if (data.error) {
+          throw new Error(data.error)
+        }
+
         if (data.questions && data.questions.length === 3) {
+          console.log('✅ 问题加载成功')
           setAiQuestions(data.questions)
           setAnswers(new Array(data.questions.length).fill({ selectedOptions: [], customInput: '' }))
+          hasLoadedRef.current = true  // 只在成功后设置标志位
         } else {
+          console.error('❌ 返回的问题格式不正确:', data)
           throw new Error('Invalid questions format')
         }
       } catch (error) {
-        console.error('Failed to load AI questions:', error)
+        console.error('❌ 加载 AI 问题失败:', error)
         setLoadError(true)
       } finally {
         setIsLoadingQuestions(false)
