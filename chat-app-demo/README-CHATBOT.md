@@ -69,7 +69,7 @@ npm run dev
 ## 项目结构
 
 ```
-bohack-social/
+chat-app-demo/
 ├── app/
 │   ├── api/
 │   │   └── chat/
