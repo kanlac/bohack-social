@@ -22,7 +22,7 @@ interface Answer {
 
 interface Props {
   formData: FormData
-  onComplete: () => void
+  onComplete: (answers: Answer[]) => void
   onSkip: () => void
 }
 
@@ -101,7 +101,7 @@ export default function AIChat({ formData, onComplete, onSkip }: Props) {
       if (currentQuestion < aiQuestions.length - 1) {
         setCurrentQuestion(currentQuestion + 1)
       } else {
-        onComplete()
+        onComplete(newAnswers)
       }
     }
   }

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 
 interface FormData {
@@ -9,39 +10,111 @@ interface FormData {
   wechat: string
 }
 
+interface Answer {
+  selectedOptions: string[]
+  customInput: string
+}
+
 interface Props {
   formData: FormData
+  answers: Answer[]
 }
 
-// Mock AI-generated profile data
-const generateProfile = (data: FormData) => {
-  const titles = [
-    '疯狂的诗人',
-    '忧郁的码农',
-    '灵感捕手',
-    '深夜哲学家',
-    '代码魔法师',
-    '创意游侠',
-    '梦想工程师',
-  ]
+interface Profile {
+  title: string
+  bio: string
+  emoji: string
+}
 
-  const bios = [
-    '在代码与梦想的交界处游走，用bug换取成长。',
-    '白天写代码，夜晚写诗，偶尔也写人生。',
-    '相信技术能改变世界，更相信人能改变技术。',
-    '不只是敲代码的机器，更是追梦的浪漫主义者。',
-  ]
+export default function ProfilePreview({ formData, answers }: Props) {
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(false)
 
-  return {
-    title: titles[Math.floor(Math.random() * titles.length)],
-    bio: bios[Math.floor(Math.random() * bios.length)],
-    vibe: data.moods[0] || '探索者',
-    matchScore: Math.floor(Math.random() * 20) + 80,
+  useEffect(() => {
+    const generateProfile = async () => {
+      try {
+        setIsLoading(true)
+        setError(false)
+        const response = await fetch('/api/generate-profile', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ formData, answers }),
+        })
+
+        const data = await response.json()
+        if (data.error) {
+          throw new Error(data.error)
+        }
+        setProfile(data)
+      } catch (err) {
+        console.error('Failed to generate profile:', err)
+        setError(true)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    generateProfile()
+  }, [formData, answers])
+
+  // 加载中状态
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-md mx-auto px-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="glass rounded-3xl p-10 shadow-2xl min-h-[400px] flex items-center justify-center"
+        >
+          <div className="text-center">
+            <motion.div
+              className="text-6xl mb-4"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+            >
+              ✨
+            </motion.div>
+            <h3 className="text-2xl font-outfit font-bold text-gradient mb-2">
+              AI 正在生成你的专属名片...
+            </h3>
+            <p className="text-gray-600">稍等片刻～</p>
+          </div>
+        </motion.div>
+      </div>
+    )
   }
-}
 
-export default function ProfilePreview({ formData }: Props) {
-  const profile = generateProfile(formData)
+  // 错误状态
+  if (error || !profile) {
+    return (
+      <div className="w-full max-w-md mx-auto px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass rounded-3xl p-10 shadow-2xl text-center"
+        >
+          <div className="text-6xl mb-4">😕</div>
+          <h3 className="text-2xl font-outfit font-bold text-gray-800 mb-2">
+            生成失败
+          </h3>
+          <p className="text-gray-600 mb-6">
+            AI 生成名片失败，请刷新页面重试
+          </p>
+          <motion.button
+            onClick={() => window.location.reload()}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-6 py-3 rounded-2xl bg-gradient-to-r from-hot-pink to-purple text-white font-semibold shadow-lg"
+          >
+            刷新页面
+          </motion.button>
+        </motion.div>
+      </div>
+    )
+  }
 
   return (
     <div className="w-full max-w-md mx-auto px-4">
@@ -79,7 +152,7 @@ export default function ProfilePreview({ formData }: Props) {
             transition={{ delay: 0.6 }}
           >
             <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-sunset-orange to-hot-pink flex items-center justify-center text-4xl shadow-lg">
-              🚀
+              {profile.emoji}
             </div>
             <div>
               <h3 className="text-2xl font-outfit font-bold text-gray-800">
@@ -121,20 +194,26 @@ export default function ProfilePreview({ formData }: Props) {
             ))}
           </motion.div>
 
-          {/* Vibe & Match Score */}
+          {/* Current Vibe */}
           <motion.div
-            className="flex items-center justify-between pt-6 border-t-2 border-gray-200"
+            className="pt-6 border-t-2 border-gray-200"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.2 }}
           >
-            <div>
-              <p className="text-sm text-gray-500">当前状态</p>
-              <p className="text-lg font-semibold text-gray-800">{profile.vibe}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-gray-500">AI 匹配度</p>
-              <p className="text-2xl font-bold text-gradient">{profile.matchScore}%</p>
+            <p className="text-sm text-gray-500">当前状态</p>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {formData.moods.map((mood, i) => (
+                <motion.span
+                  key={mood}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 1.3 + i * 0.1, type: 'spring' }}
+                  className="px-3 py-1 bg-gradient-to-r from-hot-pink/20 to-purple/20 text-purple-700 rounded-full text-sm font-medium"
+                >
+                  {mood}
+                </motion.span>
+              ))}
             </div>
           </motion.div>
         </div>

@@ -16,6 +16,11 @@ interface FormData {
   wechat: string
 }
 
+interface Answer {
+  selectedOptions: string[]
+  customInput: string
+}
+
 export default function Home() {
   const [step, setStep] = useState<Step>('form')
   const [formData, setFormData] = useState<FormData>({
@@ -24,13 +29,15 @@ export default function Home() {
     project: '',
     wechat: '',
   })
+  const [answers, setAnswers] = useState<Answer[]>([])
 
   const handleFormComplete = (data: FormData) => {
     setFormData(data)
     setStep('chat')
   }
 
-  const handleChatComplete = () => {
+  const handleChatComplete = (chatAnswers: Answer[]) => {
+    setAnswers(chatAnswers)
     setStep('loading')
     // Simulate AI processing
     setTimeout(() => {
@@ -39,6 +46,7 @@ export default function Home() {
   }
 
   const handleSkipChat = () => {
+    setAnswers([])
     setStep('loading')
     setTimeout(() => {
       setStep('preview')
@@ -98,7 +106,7 @@ export default function Home() {
             transition={{ duration: 0.8, type: 'spring' }}
             className="w-full max-w-md"
           >
-            <ProfilePreview formData={formData} />
+            <ProfilePreview formData={formData} answers={answers} />
           </motion.div>
         )}
       </AnimatePresence>
