@@ -25,14 +25,14 @@ const moodOptions = [
 ]
 
 const interestOptions = [
-  { label: 'AI/机器学习', icon: '🤖' },
-  { label: 'Web3/区块链', icon: '⛓️' },
-  { label: '游戏开发', icon: '🎮' },
-  { label: '前端技术', icon: '💅' },
-  { label: '后端架构', icon: '⚙️' },
-  { label: '设计/UI/UX', icon: '🎨' },
-  { label: '硬件/IoT', icon: '🔌' },
-  { label: '开源项目', icon: '🌟' },
+  { label: '设计', icon: '🎨' },
+  { label: '医疗', icon: '⚕️' },
+  { label: '量子计算', icon: '⚛️' },
+  { label: '建筑', icon: '🏛️' },
+  { label: 'AI Agent', icon: '🤖' },
+  { label: '算法', icon: '📐' },
+  { label: '玄学', icon: '🔮' },
+  { label: '情感陪伴', icon: '💝' },
 ]
 
 export default function OnboardingForm({ onComplete }: Props) {
