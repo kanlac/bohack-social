@@ -47,6 +47,9 @@ export async function GET(req: NextRequest) {
   moods TEXT[] NOT NULL,
   wechat TEXT,
   answers JSONB NOT NULL,
+  tags TEXT[] DEFAULT '{}',
+  unique_quote TEXT,
+  background TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

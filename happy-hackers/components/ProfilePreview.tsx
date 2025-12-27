@@ -26,6 +26,9 @@ interface Profile {
   title: string
   bio: string
   emoji: string
+  tags?: string[]
+  uniqueQuote?: string
+  background?: string
 }
 
 export default function ProfilePreview({ formData, answers }: Props) {
@@ -80,6 +83,9 @@ export default function ProfilePreview({ formData, answers }: Props) {
             moods: formData.moods,
             wechat: formData.wechat,
             answers: answers,
+            tags: profileData.tags || [],
+            uniqueQuote: profileData.uniqueQuote || '',
+            background: profileData.background || '',
           }),
         })
 
@@ -220,22 +226,52 @@ export default function ProfilePreview({ formData, answers }: Props) {
             {profile.bio}
           </motion.p>
 
+          {/* Background Story */}
+          {profile.background && (
+            <motion.div
+              className="mb-6 p-4 bg-gradient-to-r from-purple/10 to-cyber-blue/10 rounded-2xl border border-purple/20"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9 }}
+            >
+              <p className="text-sm text-gray-500 mb-1">背景故事</p>
+              <p className="text-gray-700 leading-relaxed">
+                {profile.background}
+              </p>
+            </motion.div>
+          )}
+
+          {/* Unique Quote */}
+          {profile.uniqueQuote && (
+            <motion.div
+              className="mb-6 p-4 bg-gradient-to-r from-hot-pink/10 to-purple/10 rounded-2xl border border-hot-pink/20"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.0 }}
+            >
+              <p className="text-sm text-gray-500 mb-1">独特语录</p>
+              <p className="text-gray-700 italic leading-relaxed">
+                "{profile.uniqueQuote}"
+              </p>
+            </motion.div>
+          )}
+
           {/* Tags */}
           <motion.div
             className="flex flex-wrap gap-2 mb-6"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1 }}
+            transition={{ delay: 1.1 }}
           >
-            {formData.interests.slice(0, 3).map((interest, i) => (
+            {(profile.tags && profile.tags.length > 0 ? profile.tags : formData.interests.slice(0, 3)).map((tag, i) => (
               <motion.span
-                key={interest}
+                key={tag}
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                transition={{ delay: 1.1 + i * 0.1, type: 'spring' }}
+                transition={{ delay: 1.2 + i * 0.1, type: 'spring' }}
                 className="px-4 py-2 bg-gradient-to-r from-purple/20 to-cyber-blue/20 text-purple-700 rounded-full text-sm font-medium"
               >
-                {interest}
+                {tag}
               </motion.span>
             ))}
           </motion.div>

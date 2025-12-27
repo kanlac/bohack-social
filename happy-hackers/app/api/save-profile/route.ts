@@ -16,6 +16,9 @@ interface RequestData {
   moods: string[]
   wechat?: string
   answers: Answer[]
+  tags?: string[]
+  uniqueQuote?: string
+  background?: string
 }
 
 export async function POST(req: NextRequest) {
@@ -54,6 +57,9 @@ export async function POST(req: NextRequest) {
           moods: data.moods,
           wechat: data.wechat || null,
           answers: data.answers,
+          tags: data.tags || [],
+          unique_quote: data.uniqueQuote || null,
+          background: data.background || null,
         },
       ], { onConflict: 'id' })
       .select()

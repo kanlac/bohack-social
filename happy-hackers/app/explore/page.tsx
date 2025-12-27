@@ -13,6 +13,9 @@ interface User {
   bio: string
   interests: string[]
   moods: string[]
+  tags?: string[]
+  unique_quote?: string
+  background?: string
 }
 
 interface MyProfile {
@@ -24,6 +27,9 @@ interface MyProfile {
   interests: string[]
   moods: string[]
   wechat?: string
+  tags?: string[]
+  unique_quote?: string
+  background?: string
 }
 
 const ALL_INTERESTS = [
@@ -64,7 +70,6 @@ export default function ExplorePageV2() {
   const [isLoadingProfile, setIsLoadingProfile] = useState(true)
   const [hasProfile, setHasProfile] = useState(false)
   const [users, setUsers] = useState<User[]>([])
-  const [isLoadingUsers, setIsLoadingUsers] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [selectedInterests, setSelectedInterests] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -111,7 +116,6 @@ export default function ExplorePageV2() {
 
     const fetchAllUsers = async () => {
       try {
-        setIsLoadingUsers(true)
         const response = await fetch('/api/get-all-profiles')
         const data = await response.json()
 
@@ -121,8 +125,6 @@ export default function ExplorePageV2() {
         }
       } catch (error) {
         console.error('Failed to fetch users:', error)
-      } finally {
-        setIsLoadingUsers(false)
       }
     }
 
@@ -306,12 +308,12 @@ export default function ExplorePageV2() {
                   </p>
 
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {user.interests.slice(0, 3).map((interest) => (
+                    {(user.tags && user.tags.length > 0 ? user.tags : user.interests).slice(0, 3).map((tag) => (
                       <span
-                        key={interest}
+                        key={tag}
                         className="px-3 py-1 bg-gradient-to-r from-purple/20 to-cyber-blue/20 text-purple-700 rounded-full text-xs font-medium"
                       >
-                        {interest}
+                        {tag}
                       </span>
                     ))}
                   </div>
@@ -425,6 +427,38 @@ export default function ExplorePageV2() {
                     </p>
                   </motion.div>
 
+                  {selectedUser.background && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.15 }}
+                      className="mb-6 p-4 bg-gradient-to-r from-purple/10 to-cyber-blue/10 rounded-2xl border border-purple/20"
+                    >
+                      <h3 className="text-sm font-semibold text-gray-500 mb-2">
+                        背景故事
+                      </h3>
+                      <p className="text-gray-700 leading-relaxed">
+                        {selectedUser.background}
+                      </p>
+                    </motion.div>
+                  )}
+
+                  {selectedUser.unique_quote && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.17 }}
+                      className="mb-6 p-4 bg-gradient-to-r from-hot-pink/10 to-purple/10 rounded-2xl border border-hot-pink/20"
+                    >
+                      <h3 className="text-sm font-semibold text-gray-500 mb-2">
+                        独特语录
+                      </h3>
+                      <p className="text-gray-700 italic leading-relaxed">
+                        "{selectedUser.unique_quote}"
+                      </p>
+                    </motion.div>
+                  )}
+
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -432,18 +466,18 @@ export default function ExplorePageV2() {
                     className="mb-6"
                   >
                     <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                      感兴趣的话题
+                      {selectedUser.tags && selectedUser.tags.length > 0 ? '标签' : '感兴趣的话题'}
                     </h3>
                     <div className="flex flex-wrap gap-2">
-                      {selectedUser.interests.map((interest, i) => (
+                      {(selectedUser.tags && selectedUser.tags.length > 0 ? selectedUser.tags : selectedUser.interests).map((tag, i) => (
                         <motion.span
-                          key={interest}
+                          key={tag}
                           initial={{ opacity: 0, scale: 0 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ delay: 0.3 + i * 0.05 }}
                           className="px-4 py-2 bg-gradient-to-r from-purple/20 to-cyber-blue/20 text-purple-700 rounded-full text-sm font-medium"
                         >
-                          {interest}
+                          {tag}
                         </motion.span>
                       ))}
                     </div>

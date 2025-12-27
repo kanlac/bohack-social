@@ -13,6 +13,9 @@ interface Profile {
   interests: string[]
   moods: string[]
   wechat?: string
+  tags?: string[]
+  unique_quote?: string
+  background?: string
 }
 
 export default function MePage() {
@@ -165,6 +168,36 @@ export default function MePage() {
               {profile.bio}
             </motion.p>
 
+            {/* Background Story */}
+            {profile.background && (
+              <motion.div
+                className="mb-6 p-4 bg-gradient-to-r from-purple/10 to-cyber-blue/10 rounded-2xl border border-purple/20"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+              >
+                <p className="text-sm text-gray-500 mb-1">背景故事</p>
+                <p className="text-gray-700 leading-relaxed">
+                  {profile.background}
+                </p>
+              </motion.div>
+            )}
+
+            {/* Unique Quote */}
+            {profile.unique_quote && (
+              <motion.div
+                className="mb-6 p-4 bg-gradient-to-r from-hot-pink/10 to-purple/10 rounded-2xl border border-hot-pink/20"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.75 }}
+              >
+                <p className="text-sm text-gray-500 mb-1">独特语录</p>
+                <p className="text-gray-700 italic leading-relaxed">
+                  "{profile.unique_quote}"
+                </p>
+              </motion.div>
+            )}
+
             {/* Tags */}
             <motion.div
               className="flex flex-wrap gap-2 mb-6"
@@ -172,15 +205,15 @@ export default function MePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
             >
-              {profile.interests.slice(0, 3).map((interest, i) => (
+              {(profile.tags && profile.tags.length > 0 ? profile.tags : profile.interests.slice(0, 3)).map((tag, i) => (
                 <motion.span
-                  key={interest}
+                  key={tag}
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.9 + i * 0.1, type: 'spring' }}
                   className="px-4 py-2 bg-gradient-to-r from-purple/20 to-cyber-blue/20 text-purple-700 rounded-full text-sm font-medium"
                 >
-                  {interest}
+                  {tag}
                 </motion.span>
               ))}
             </motion.div>
