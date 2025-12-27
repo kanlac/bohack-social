@@ -11,18 +11,20 @@ interface User {
   bio: string
   interests: string[]
   moods: string[]
+  color: string // 个性化颜色主题
 }
 
-// Mock data - 10 diverse hackers
+// Mock data - 柔和配色版本
 const MOCK_USERS: User[] = [
   {
     id: '1',
     emoji: '🌙',
     title: '深夜代码诗人',
     project: '用AI写诗的聊天机器人',
-    bio: '代码是我的韵脚，bug是我的灵感',
+    bio: '代码是我的韵脉，bug是我的灵感',
     interests: ['AI/机器学习', '开源项目', '前端技术'],
     moods: ['疯狂改bug中', '灵感爆发'],
+    color: 'from-indigo-400 to-purple-500',
   },
   {
     id: '2',
@@ -32,6 +34,7 @@ const MOCK_USERS: User[] = [
     bio: '在区块链的浪潮中寻找下一个风口',
     interests: ['Web3/区块链', '设计/UI/UX', '游戏开发'],
     moods: ['求队友', '四处游荡'],
+    color: 'from-cyan-400 to-blue-500',
   },
   {
     id: '3',
@@ -41,6 +44,7 @@ const MOCK_USERS: User[] = [
     bio: '每个像素都是精心调教的艺术品',
     interests: ['设计/UI/UX', '前端技术', '开源项目'],
     moods: ['灵感爆发', '咖啡续命'],
+    color: 'from-pink-400 to-rose-500',
   },
   {
     id: '4',
@@ -50,6 +54,7 @@ const MOCK_USERS: User[] = [
     bio: '用机器学习点石成金',
     interests: ['AI/机器学习', '后端架构', '开源项目'],
     moods: ['疯狂改bug中', '咖啡续命'],
+    color: 'from-orange-400 to-red-500',
   },
   {
     id: '5',
@@ -59,6 +64,7 @@ const MOCK_USERS: User[] = [
     bio: '前端后端都是我的战场',
     interests: ['前端技术', '后端架构', 'AI/机器学习'],
     moods: ['求队友', '灵感爆发'],
+    color: 'from-violet-400 to-purple-500',
   },
   {
     id: '6',
@@ -68,6 +74,7 @@ const MOCK_USERS: User[] = [
     bio: '用代码创造平行世界',
     interests: ['游戏开发', 'Web3/区块链', 'AI/机器学习'],
     moods: ['四处游荡', '摸鱼中'],
+    color: 'from-emerald-400 to-teal-500',
   },
   {
     id: '7',
@@ -77,6 +84,7 @@ const MOCK_USERS: User[] = [
     bio: '让机器听我的指挥',
     interests: ['硬件/IoT', 'AI/机器学习', '后端架构'],
     moods: ['疯狂改bug中', '已躺平'],
+    color: 'from-slate-400 to-gray-500',
   },
   {
     id: '8',
@@ -86,6 +94,7 @@ const MOCK_USERS: User[] = [
     bio: '开源改变世界，从我做起',
     interests: ['开源项目', '前端技术', '后端架构'],
     moods: ['灵感爆发', '咖啡续命'],
+    color: 'from-amber-400 to-yellow-500',
   },
   {
     id: '9',
@@ -95,6 +104,7 @@ const MOCK_USERS: User[] = [
     bio: '每一毫秒都值得优化',
     interests: ['前端技术', '后端架构', '开源项目'],
     moods: ['疯狂改bug中', '求队友'],
+    color: 'from-sky-400 to-blue-500',
   },
   {
     id: '10',
@@ -104,6 +114,7 @@ const MOCK_USERS: User[] = [
     bio: '让每个人都能享受科技之美',
     interests: ['设计/UI/UX', '前端技术', '开源项目'],
     moods: ['灵感爆发', '四处游荡'],
+    color: 'from-fuchsia-400 to-pink-500',
   },
 ]
 
@@ -118,12 +129,11 @@ const ALL_INTERESTS = [
   '开源项目',
 ]
 
-export default function ExplorePage() {
+export default function ExplorePageV2() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [selectedInterests, setSelectedInterests] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Filter users based on selected interests and search query
   const filteredUsers = MOCK_USERS.filter(user => {
     const matchesInterests = selectedInterests.length === 0 ||
       selectedInterests.some(interest => user.interests.includes(interest))
@@ -156,7 +166,6 @@ export default function ExplorePage() {
           {filteredUsers.length} 位黑客正在现场创造奇迹
         </p>
 
-        {/* Search */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -172,7 +181,6 @@ export default function ExplorePage() {
           />
         </motion.div>
 
-        {/* Interest Filters */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -229,20 +237,19 @@ export default function ExplorePage() {
                 onClick={() => setSelectedUser(user)}
                 className="glass rounded-3xl p-6 cursor-pointer hover:shadow-2xl transition-shadow relative overflow-hidden group"
               >
-                {/* Decorative gradient blob */}
-                <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-hot-pink/20 to-purple/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
+                <div className={`absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br ${user.color} opacity-10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500`} />
 
                 <div className="relative">
-                  {/* Emoji Avatar */}
+                  {/* Emoji Avatar - 柔和渐变背景 */}
                   <motion.div
-                    className="w-20 h-20 rounded-2xl bg-gradient-to-br from-sunset-orange to-hot-pink flex items-center justify-center text-5xl shadow-lg mb-4"
+                    className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${user.color} bg-opacity-20 backdrop-blur-sm flex items-center justify-center text-5xl shadow-md mb-4 relative`}
                     whileHover={{ rotate: [0, -10, 10, -10, 0] }}
                     transition={{ duration: 0.5 }}
                   >
-                    {user.emoji}
+                    <div className="absolute inset-0 bg-white/40 rounded-2xl" />
+                    <span className="relative z-10">{user.emoji}</span>
                   </motion.div>
 
-                  {/* Title & Project */}
                   <h3 className="text-2xl font-outfit font-bold text-gray-800 mb-2 group-hover:text-gradient transition-all">
                     {user.title}
                   </h3>
@@ -250,7 +257,6 @@ export default function ExplorePage() {
                     {user.project}
                   </p>
 
-                  {/* Interest Tags */}
                   <div className="flex flex-wrap gap-2 mb-4">
                     {user.interests.slice(0, 3).map((interest) => (
                       <span
@@ -262,7 +268,6 @@ export default function ExplorePage() {
                     ))}
                   </div>
 
-                  {/* Moods */}
                   <div className="flex gap-2 text-sm text-gray-500">
                     {user.moods.slice(0, 2).map((mood) => (
                       <span key={mood} className="opacity-75">
@@ -271,7 +276,6 @@ export default function ExplorePage() {
                     ))}
                   </div>
 
-                  {/* Click hint */}
                   <motion.div
                     className="absolute bottom-4 right-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity"
                     animate={{ x: [0, 4, 0] }}
@@ -287,7 +291,6 @@ export default function ExplorePage() {
           </AnimatePresence>
         </motion.div>
 
-        {/* Empty State */}
         {filteredUsers.length === 0 && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -305,11 +308,10 @@ export default function ExplorePage() {
         )}
       </div>
 
-      {/* Detail Modal */}
+      {/* Detail Modal - 同样使用个性化颜色 */}
       <AnimatePresence>
         {selectedUser && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -318,7 +320,6 @@ export default function ExplorePage() {
               className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
             />
 
-            {/* Modal */}
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
               <motion.div
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -328,7 +329,6 @@ export default function ExplorePage() {
                 className="glass rounded-3xl p-8 max-w-2xl w-full shadow-2xl relative overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Close button */}
                 <motion.button
                   onClick={(e) => {
                     e.stopPropagation()
@@ -343,19 +343,18 @@ export default function ExplorePage() {
                   </svg>
                 </motion.button>
 
-                {/* Decorative blobs */}
-                <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-hot-pink/20 to-purple/20 rounded-full blur-3xl" />
-                <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-gradient-to-tr from-cyber-blue/20 to-electric-lime/20 rounded-full blur-3xl" />
+                <div className={`absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br ${selectedUser.color} opacity-20 rounded-full blur-3xl`} />
+                <div className={`absolute -bottom-20 -left-20 w-64 h-64 bg-gradient-to-tr ${selectedUser.color} opacity-20 rounded-full blur-3xl`} />
 
                 <div className="relative">
-                  {/* Header */}
                   <div className="flex items-center gap-6 mb-6">
                     <motion.div
-                      className="w-24 h-24 rounded-2xl bg-gradient-to-br from-sunset-orange to-hot-pink flex items-center justify-center text-6xl shadow-lg flex-shrink-0"
+                      className={`w-24 h-24 rounded-2xl bg-gradient-to-br ${selectedUser.color} bg-opacity-20 backdrop-blur-sm flex items-center justify-center text-6xl shadow-lg flex-shrink-0 relative`}
                       animate={{ rotate: [0, -5, 5, -5, 0] }}
                       transition={{ duration: 0.5 }}
                     >
-                      {selectedUser.emoji}
+                      <div className="absolute inset-0 bg-white/40 rounded-2xl" />
+                      <span className="relative z-10">{selectedUser.emoji}</span>
                     </motion.div>
                     <div>
                       <h2 className="text-3xl font-outfit font-bold text-gradient mb-2">
@@ -367,7 +366,6 @@ export default function ExplorePage() {
                     </div>
                   </div>
 
-                  {/* Bio */}
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -379,7 +377,6 @@ export default function ExplorePage() {
                     </p>
                   </motion.div>
 
-                  {/* All Interests */}
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -404,7 +401,6 @@ export default function ExplorePage() {
                     </div>
                   </motion.div>
 
-                  {/* Current Moods */}
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -428,7 +424,6 @@ export default function ExplorePage() {
                     </div>
                   </motion.div>
 
-                  {/* Action Buttons */}
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
