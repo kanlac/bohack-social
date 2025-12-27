@@ -1,106 +1,249 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useUserId } from '@/lib/hooks/useUserId'
-import { clearUserId } from '@/lib/user'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 
+interface Profile {
+  id: string
+  emoji: string
+  title: string
+  project: string
+  bio: string
+  interests: string[]
+  moods: string[]
+  wechat?: string
+}
+
 export default function MePage() {
-  const userId = useUserId()
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [hasProfile, setHasProfile] = useState(false)
+  const initialized = useRef(false)
   const router = useRouter()
 
-  const handleClearId = () => {
-    if (confirm('确定要清除用户 ID 吗？这将重新生成一个新的 ID。')) {
-      clearUserId()
-      router.refresh()
+  useEffect(() => {
+    if (initialized.current) {
+      return
     }
+    initialized.current = true
+
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch('/api/get-profile')
+        const data = await response.json()
+
+        if (data.hasProfile && data.profile) {
+          setProfile(data.profile)
+          setHasProfile(true)
+        } else {
+          setHasProfile(false)
+        }
+      } catch (error) {
+        console.error('Failed to fetch profile:', error)
+        setHasProfile(false)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchProfile()
+  }, [])
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center"
+        >
+          <motion.div
+            className="text-6xl mb-4"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+          >
+            ✨
+          </motion.div>
+          <p className="text-gray-600">加载中...</p>
+        </motion.div>
+      </div>
+    )
   }
 
+  // No profile state
+  if (!hasProfile || !profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-md w-full"
+        >
+          <div className="glass rounded-3xl p-12 shadow-xl border border-gray-200/50 text-center">
+            <div className="text-6xl mb-6">👋</div>
+            <h2 className="text-2xl font-outfit font-bold text-gradient mb-4">
+              还没有创建名片哦
+            </h2>
+            <p className="text-gray-600 mb-8">
+              完成 Onboarding 问卷后，AI 会为你生成专属名片
+            </p>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => router.push('/')}
+              className="w-full px-6 py-4 rounded-2xl bg-gradient-to-r from-hot-pink to-purple text-white font-bold shadow-lg"
+            >
+              开始创建名片 →
+            </motion.button>
+          </div>
+        </motion.div>
+      </div>
+    )
+  }
+
+  // Profile card
   return (
     <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-2xl"
+        className="w-full max-w-md"
       >
-        <div className="glass rounded-3xl p-8 sm:p-12 shadow-xl border border-gray-200/50">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-              className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-hot-pink to-purple rounded-full flex items-center justify-center text-5xl"
-            >
-              👤
-            </motion.div>
-            <h1 className="text-3xl sm:text-4xl font-outfit font-bold text-gradient mb-2">
-              我的信息
-            </h1>
-            <p className="text-gray-600">
-              这是你的身份信息，会自动保存在浏览器中
-            </p>
-          </div>
-
-          {/* User ID Section */}
-          <div className="space-y-6">
-            <div className="bg-white/60 rounded-2xl p-6 border border-gray-200/50">
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                用户 ID
-              </label>
-              <div className="bg-white rounded-xl p-4 border border-gray-300/50">
-                <code className="text-sm text-gray-800 break-all font-mono">
-                  {userId || '加载中...'}
-                </code>
-              </div>
-              <p className="text-xs text-gray-500 mt-3">
-                💡 此 ID 保存在 Cookie 和 LocalStorage 中，不换浏览器和清除数据的情况下会一直保留
-              </p>
-            </div>
-
-            {/* Info Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-6 border border-blue-200/50"
-              >
-                <div className="text-3xl mb-2">🍪</div>
-                <h3 className="font-semibold text-gray-800 mb-1">Cookie 保存</h3>
-                <p className="text-sm text-gray-600">
-                  有效期 1 年
-                </p>
-              </motion.div>
-
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200/50"
-              >
-                <div className="text-3xl mb-2">💾</div>
-                <h3 className="font-semibold text-gray-800 mb-1">本地备份</h3>
-                <p className="text-sm text-gray-600">
-                  LocalStorage 双重保护
-                </p>
-              </motion.div>
-            </div>
-
-            {/* Actions */}
-            <div className="pt-4 space-y-3">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleClearId}
-                className="w-full px-6 py-3 rounded-xl border-2 border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-all"
-              >
-                🗑️ 清除用户 ID（仅用于测试）
-              </motion.button>
-
-              <p className="text-xs text-center text-gray-500">
-                清除后刷新页面会自动生成新的 ID
-              </p>
-            </div>
-          </div>
+        {/* Header */}
+        <div className="text-center mb-6">
+          <h1 className="text-3xl sm:text-4xl font-outfit font-bold text-gradient mb-2">
+            我的名片
+          </h1>
+          <p className="text-gray-600">
+            这是 AI 为你生成的专属名片
+          </p>
         </div>
+
+        {/* Profile Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, type: 'spring' }}
+          className="glass rounded-3xl p-8 shadow-2xl relative overflow-hidden"
+        >
+          {/* Decorative Background Blobs */}
+          <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-hot-pink/20 to-purple/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-cyber-blue/20 to-electric-lime/20 rounded-full blur-3xl" />
+
+          {/* Content */}
+          <div className="relative">
+            {/* Avatar & Title */}
+            <motion.div
+              className="flex items-center gap-4 mb-6"
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-sunset-orange to-hot-pink flex items-center justify-center text-4xl shadow-lg">
+                {profile.emoji}
+              </div>
+              <div>
+                <h3 className="text-2xl font-outfit font-bold text-gray-800">
+                  {profile.title}
+                </h3>
+                <p className="text-gray-500 text-sm mt-1">
+                  {profile.project}
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Bio */}
+            <motion.p
+              className="text-gray-700 text-lg mb-6 leading-relaxed"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+            >
+              {profile.bio}
+            </motion.p>
+
+            {/* Tags */}
+            <motion.div
+              className="flex flex-wrap gap-2 mb-6"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+            >
+              {profile.interests.slice(0, 3).map((interest, i) => (
+                <motion.span
+                  key={interest}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.9 + i * 0.1, type: 'spring' }}
+                  className="px-4 py-2 bg-gradient-to-r from-purple/20 to-cyber-blue/20 text-purple-700 rounded-full text-sm font-medium"
+                >
+                  {interest}
+                </motion.span>
+              ))}
+            </motion.div>
+
+            {/* Current Vibe */}
+            <motion.div
+              className="pt-6 border-t-2 border-gray-200"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.0 }}
+            >
+              <p className="text-sm text-gray-500">当前状态</p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {profile.moods.map((mood, i) => (
+                  <motion.span
+                    key={mood}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 1.1 + i * 0.1, type: 'spring' }}
+                    className="px-3 py-1 bg-gradient-to-r from-hot-pink/20 to-purple/20 text-purple-700 rounded-full text-sm font-medium"
+                  >
+                    {mood}
+                  </motion.span>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Action Buttons */}
+        <motion.div
+          className="mt-6 space-y-3"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.2 }}
+        >
+          <motion.button
+            whileHover={{ scale: 1.02, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => router.push('/explore')}
+            className="w-full py-4 rounded-2xl bg-gradient-to-r from-hot-pink via-purple to-cyber-blue text-white font-bold text-lg shadow-xl hover:shadow-2xl transition-all"
+          >
+            让你的分身去找人聊聊天 💬
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => router.push('/')}
+            className="w-full py-4 rounded-2xl bg-white text-gray-700 font-semibold border-2 border-gray-200 hover:bg-gray-50 transition-all"
+          >
+            继续完善资料 →
+          </motion.button>
+        </motion.div>
+
+        {/* Hint */}
+        <motion.p
+          className="text-center text-sm text-gray-500 mt-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.4 }}
+        >
+          你的 AI 分身会代表你和其他人的分身对话，找到最适合你的队友～
+        </motion.p>
       </motion.div>
     </div>
   )

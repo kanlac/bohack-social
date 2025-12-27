@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 
 interface FormData {
   moods: string[]
@@ -32,6 +33,7 @@ export default function ProfilePreview({ formData, answers }: Props) {
   const [error, setError] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const hasGeneratedRef = useRef(false)
+  const router = useRouter()
 
   useEffect(() => {
     // Prevent duplicate execution in React Strict Mode
@@ -85,6 +87,10 @@ export default function ProfilePreview({ formData, answers }: Props) {
           console.error('Failed to save profile:', saveResult.error)
         } else {
           console.log('Profile saved successfully:', saveResult.user)
+          // 保存成功后，等待一下然后跳转到 /me 页面
+          setTimeout(() => {
+            router.push('/me')
+          }, 1500)
         }
       } catch (err) {
         console.error('Failed to generate profile:', err)
@@ -96,7 +102,7 @@ export default function ProfilePreview({ formData, answers }: Props) {
     }
 
     generateAndSaveProfile()
-  }, [formData, answers])
+  }, [formData, answers, router])
 
   // 加载中状态
   if (isLoading) {
@@ -167,6 +173,7 @@ export default function ProfilePreview({ formData, answers }: Props) {
         <h2 className="text-3xl font-outfit font-bold text-gradient">
           名片生成完成！
         </h2>
+        <p className="text-gray-600 mt-2">即将跳转到你的名片页面...</p>
       </motion.div>
 
       {/* Profile Card */}
@@ -256,39 +263,6 @@ export default function ProfilePreview({ formData, answers }: Props) {
           </motion.div>
         </div>
       </motion.div>
-
-      {/* Action Buttons */}
-      <motion.div
-        className="mt-6 space-y-3"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.4 }}
-      >
-        <motion.button
-          whileHover={{ scale: 1.02, y: -2 }}
-          whileTap={{ scale: 0.98 }}
-          className="w-full py-4 rounded-2xl bg-gradient-to-r from-hot-pink via-purple to-cyber-blue text-white font-bold text-lg shadow-xl hover:shadow-2xl transition-all"
-        >
-          进入 Me 页面 ✨
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="w-full py-4 rounded-2xl bg-white text-gray-700 font-semibold border-2 border-gray-200 hover:bg-gray-50 transition-all"
-        >
-          继续完善资料 →
-        </motion.button>
-      </motion.div>
-
-      {/* Hint */}
-      <motion.p
-        className="text-center text-sm text-gray-500 mt-6"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.6 }}
-      >
-        点击「继续完善资料」可以让 AI 更了解你哦～
-      </motion.p>
     </div>
   )
 }

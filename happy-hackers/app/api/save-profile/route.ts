@@ -31,11 +31,21 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Insert user profile into Supabase
+    // Get user_id from cookie
+    const userId = req.cookies.get('bohack_user_id')?.value
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User ID not found. Please refresh the page.' },
+        { status: 400 }
+      )
+    }
+
+    // Insert or update user profile in Supabase
     const { data: user, error } = await supabase
       .from('users')
-      .insert([
+      .upsert([
         {
+          id: userId,
           emoji: data.emoji,
           title: data.title,
           project: data.project,
@@ -45,7 +55,7 @@ export async function POST(req: NextRequest) {
           wechat: data.wechat || null,
           answers: data.answers,
         },
-      ])
+      ], { onConflict: 'id' })
       .select()
       .single()
 
