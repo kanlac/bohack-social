@@ -77,88 +77,27 @@ export async function POST(req: Request) {
     });
 
     // 解析 AI 返回的 JSON
-    let parsedResponse;
     try {
       // 尝试提取 JSON 部分
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        parsedResponse = JSON.parse(jsonMatch[0]);
+        const parsedResponse = JSON.parse(jsonMatch[0]);
+        return Response.json(parsedResponse);
       } else {
         throw new Error('No JSON found in response');
       }
     } catch (parseError) {
-      // 如果解析失败，返回默认问题
       console.error('Failed to parse AI response:', text);
-      parsedResponse = {
-        questions: [
-          {
-            question: '如果你的项目是一种动物，会是什么？🦄',
-            options: [
-              '🦉 猫头鹰 - 夜间最活跃',
-              '🐆 猎豹 - 追求速度与效率',
-              '🦥 树懒 - 慢工出细活',
-              '🦊 狐狸 - 聪明且灵活'
-            ]
-          },
-          {
-            question: '凌晨3点的你通常在做什么？',
-            options: [
-              '💻 还在写代码',
-              '😴 早就睡了',
-              '🎮 打游戏放松',
-              '📚 看技术文档学习'
-            ]
-          },
-          {
-            question: '你最想在黑客松遇到什么样的队友？',
-            options: [
-              '🚀 技术大牛，能快速实现想法',
-              '🎨 设计高手，让产品颜值爆表',
-              '💡 创意达人，脑洞大开',
-              '🤝 团队粘合剂，氛围担当'
-            ]
-          },
-        ],
-      };
+      return Response.json(
+        { error: 'Failed to parse AI response' },
+        { status: 500 }
+      );
     }
-
-    return Response.json(parsedResponse);
   } catch (error) {
     console.error('Error generating questions:', error);
     return Response.json(
-      {
-        error: 'Failed to generate questions',
-        questions: [
-          {
-            question: '如果你的项目是一种动物，会是什么？🦄',
-            options: [
-              '🦉 猫头鹰 - 夜间最活跃',
-              '🐆 猎豹 - 追求速度与效率',
-              '🦥 树懒 - 慢工出细活',
-              '🦊 狐狸 - 聪明且灵活'
-            ]
-          },
-          {
-            question: '凌晨3点的你通常在做什么？',
-            options: [
-              '💻 还在写代码',
-              '😴 早就睡了',
-              '🎮 打游戏放松',
-              '📚 看技术文档学习'
-            ]
-          },
-          {
-            question: '你最想在黑客松遇到什么样的队友？',
-            options: [
-              '🚀 技术大牛，能快速实现想法',
-              '🎨 设计高手，让产品颜值爆表',
-              '💡 创意达人，脑洞大开',
-              '🤝 团队粘合剂，氛围担当'
-            ]
-          },
-        ],
-      },
-      { status: 200 } // 即使出错也返回默认问题
+      { error: 'Failed to generate questions' },
+      { status: 500 }
     );
   }
 }
