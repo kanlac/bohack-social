@@ -16,6 +16,7 @@ interface Question {
 }
 
 interface Answer {
+  question: string
   selectedOptions: string[]
   customInput: string
 }
@@ -74,7 +75,12 @@ export default function AIChat({ formData, onComplete, onSkip }: Props) {
         if (data.questions && data.questions.length === 3) {
           console.log('✅ 问题加载成功')
           setAiQuestions(data.questions)
-          setAnswers(new Array(data.questions.length).fill({ selectedOptions: [], customInput: '' }))
+          // 使用 Array.from 创建独立的对象，避免引用同一个对象
+          setAnswers(Array.from({ length: data.questions.length }, (_, index) => ({
+            question: data.questions[index].question,
+            selectedOptions: [],
+            customInput: ''
+          })))
           setLoadError(false)  // 成功时重置错误状态
           hasLoadedRef.current = true  // 只在成功后设置标志位
         } else {
@@ -115,6 +121,7 @@ export default function AIChat({ formData, onComplete, onSkip }: Props) {
     if (selectedOptions.length > 0 || customInput.trim()) {
       const newAnswers = [...answers]
       newAnswers[currentQuestion] = {
+        question: aiQuestions[currentQuestion].question,
         selectedOptions: [...selectedOptions],
         customInput: customInput
       }

@@ -17,6 +17,7 @@ interface FormData {
 }
 
 interface Answer {
+  question: string
   selectedOptions: string[]
   customInput: string
 }
