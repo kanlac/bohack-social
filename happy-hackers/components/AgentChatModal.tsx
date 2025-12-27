@@ -24,39 +24,45 @@ interface Props {
 export default function AgentChatModal({ isOpen, onClose, user1, user2 }: Props) {
   const [messages, setMessages] = useState<Message[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const hasStartedRef = useRef(false)
 
-  // Mock 对话数据
-  const mockConversation: Message[] = [
-    { role: 'user1', content: '嘿！看到你在做 Web3 钱包，界面设计得怎么样？' },
-    { role: 'user2', content: '哈哈，还在打磨中！你的 AI 聊天机器人听起来很酷，用的什么模型？' },
-    { role: 'user1', content: '主要用 Qwen，正在优化 prompt。你的钱包支持哪些链？' },
-    { role: 'user2', content: '目前支持 ETH 和 Polygon，准备加入 Solana。你的机器人有什么特别功能吗？' },
-    { role: 'user1', content: '我在尝试让它理解用户情绪，做出更人性化的回应。你用什么框架做前端？' },
-    { role: 'user2', content: 'Next.js + Tailwind，动画用 Framer Motion。情绪识别听起来很有挑战性！' },
-    { role: 'user1', content: '是啊，正在调教 AI 的语气。要不要合作？你的 UI 能力 + 我的后端，可以做个很酷的产品。' },
-    { role: 'user2', content: '好主意！我一直想给钱包加个 AI 助手，帮用户解释交易。' },
-    { role: 'user1', content: '完美！我的 AI 正好可以做这个。咱们黑客松结束后聊聊？' },
-    { role: 'user2', content: '必须的！加个微信吧，我是 frontend_wiz' }
-  ]
-
-  // 自动播放对话
-  useEffect(() => {
-    if (isOpen && !hasStartedRef.current) {
-      hasStartedRef.current = true
+  // 生成对话
+  const generateConversation = async () => {
+    try {
       setMessages([])
       setIsGenerating(true)
+      setError(null)
 
+      const response = await fetch('/api/agent-conversation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ user1, user2 }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to generate conversation')
+      }
+
+      const data = await response.json()
+
+      if (data.error) {
+        throw new Error(data.error)
+      }
+
+      // 逐条显示消息
+      const conversation: Message[] = data.conversation
       const timers: NodeJS.Timeout[] = []
 
-      // 逐条添加消息
-      mockConversation.forEach((msg, index) => {
+      conversation.forEach((msg, index) => {
         const timer = setTimeout(() => {
           setMessages(prev => [...prev, msg])
 
           // 最后一条消息后停止生成状态
-          if (index === mockConversation.length - 1) {
+          if (index === conversation.length - 1) {
             setTimeout(() => setIsGenerating(false), 500)
           }
         }, index * 1500) // 每条消息间隔 1.5 秒
@@ -67,6 +73,18 @@ export default function AgentChatModal({ isOpen, onClose, user1, user2 }: Props)
       return () => {
         timers.forEach(timer => clearTimeout(timer))
       }
+    } catch (err) {
+      console.error('Error generating conversation:', err)
+      setError(err instanceof Error ? err.message : '生成对话失败')
+      setIsGenerating(false)
+    }
+  }
+
+  // 自动生成对话
+  useEffect(() => {
+    if (isOpen && !hasStartedRef.current) {
+      hasStartedRef.current = true
+      generateConversation()
     }
 
     // 重置 ref 当 Modal 关闭时
@@ -234,7 +252,7 @@ export default function AgentChatModal({ isOpen, onClose, user1, user2 }: Props)
             </div>
 
             {/* Generating indicator */}
-            {isGenerating && messages.length < mockConversation.length && (
+            {isGenerating && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -260,6 +278,19 @@ export default function AgentChatModal({ isOpen, onClose, user1, user2 }: Props)
                 <span className="text-sm text-purple-400 font-mono">思维同步中...</span>
               </motion.div>
             )}
+
+            {/* Error indicator */}
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-3 max-w-4xl mx-auto"
+              >
+                <div className="px-6 py-4 bg-red-500/10 border border-red-500/30 rounded-2xl backdrop-blur-xl">
+                  <p className="text-red-400 font-mono text-sm">{error}</p>
+                </div>
+              </motion.div>
+            )}
           </div>
 
           {/* Footer controls */}
@@ -278,6 +309,10 @@ export default function AgentChatModal({ isOpen, onClose, user1, user2 }: Props)
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 disabled={isGenerating}
+                onClick={() => {
+                  hasStartedRef.current = false
+                  generateConversation()
+                }}
                 className={`px-8 py-3 rounded-xl font-semibold shadow-lg border transition-all ${
                   isGenerating
                     ? 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed'
