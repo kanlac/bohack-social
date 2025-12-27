@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BoHack Social - 遇见你的黑客伙伴</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #FF6B9D 0%, #FFA06B 50%, #FFD93D 100%);
+            --secondary-gradient: linear-gradient(135deg, #A8E6CF 0%, #7EC8E3 100%);
+            --purple-gradient: linear-gradient(135deg, #B794F6 0%, #E879F9 100%);
+            --warm-bg: #FFF9F5;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-primary: #2D3748;
+            --text-secondary: #718096;
+            --shadow-sm: 0 2px 8px rgba(255, 107, 157, 0.1);
+            --shadow-md: 0 8px 24px rgba(255, 107, 157, 0.15);
+            --shadow-lg: 0 16px 40px rgba(255, 107, 157, 0.2);
+            --border-radius: 24px;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, sans-serif;
+            background: var(--warm-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            right: -20%;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(255, 107, 157, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -30%;
+            left: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(168, 230, 207, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 15s infinite ease-in-out reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, 30px) scale(1.1); }
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-gradient);
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 20px rgba(255, 107, 157, 0.5);
+        }
+
+        .step {
+            display: none;
+            animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            flex: 1;
+            padding-top: 40px;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-family: 'Fredoka', cursive;
+            font-size: clamp(2rem, 8vw, 3.5rem);
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+            animation: slideInLeft 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            line-height: 1.6;
+            animation: slideInLeft 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both;
+        }
+
+        .emoji-hero {
+            font-size: 5rem;
+            text-align: center;
+            margin: 2rem 0;
+            animation: bounce 2s infinite;
+            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.1));
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            margin-bottom: 1.5rem;
+        }
+
+        .question {
+            font-family: 'Fredoka', cursive;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .option-btn {
+            background: white;
+            border: 3px solid transparent;
+            border-radius: 16px;
+            padding: 1.25rem 1rem;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .option-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--primary-gradient);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: -1;
+        }
+
+        .option-btn:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: var(--shadow-md);
+        }
+
+        .option-btn.selected {
+            border-color: transparent;
+            color: white;
+            transform: scale(1.05);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .option-btn.selected::before {
+            opacity: 1;
+        }
+
+        .option-emoji {
+            display: block;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .text-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 2px solid #E2E8F0;
+            border-radius: 16px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            color: var(--text-primary);
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: #FF6B9D;
+            box-shadow: 0 0 0 4px rgba(255, 107, 157, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .text-input::placeholder {
+            color: #CBD5E0;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 1.25rem 3rem;
+            font-family: 'Fredoka', cursive;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-primary:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 2px solid #E2E8F0;
+            border-radius: 16px;
+            padding: 1rem 2rem;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 1rem;
+        }
+
+        .btn-secondary:hover {
+            border-color: #CBD5E0;
+            background: white;
+            transform: translateY(-2px);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .chat-container {
+            max-width: 100%;
+        }
+
+        .chat-message {
+            margin-bottom: 1rem;
+            animation: slideInChat 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideInChat {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .chat-bubble {
+            display: inline-block;
+            max-width: 85%;
+            padding: 1rem 1.5rem;
+            border-radius: 20px;
+            font-size: 1rem;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .chat-bubble.ai {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-left-radius: 4px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .chat-bubble.user {
+            background: white;
+            color: var(--text-primary);
+            border-bottom-right-radius: 4px;
+            float: right;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            border-bottom-left-radius: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.7);
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                opacity: 0.3;
+                transform: translateY(0);
+            }
+            30% {
+                opacity: 1;
+                transform: translateY(-8px);
+            }
+        }
+
+        .profile-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            animation: cardReveal 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes cardReveal {
+            from {
+                opacity: 0;
+                transform: rotateY(90deg) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: rotateY(0) scale(1);
+            }
+        }
+
+        .profile-header {
+            height: 180px;
+            background: var(--primary-gradient);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .profile-header::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 250px;
+            height: 250px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: white;
+            position: absolute;
+            bottom: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            border: 5px solid var(--warm-bg);
+        }
+
+        .profile-body {
+            padding: 5rem 2rem 2rem;
+            text-align: center;
+        }
+
+        .profile-codename {
+            font-family: 'Fredoka', cursive;
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: var(--purple-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-bio {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .profile-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .tag {
+            background: linear-gradient(135deg, rgba(255, 107, 157, 0.1) 0%, rgba(168, 230, 207, 0.1) 100%);
+            color: var(--text-primary);
+            padding: 0.5rem 1.25rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: 1px solid rgba(255, 107, 157, 0.2);
+        }
+
+        .welcome-screen {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 80vh;
+        }
+
+        .helper-text {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .question {
+                font-size: 1.25rem;
+            }
+
+            .options-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 0.75rem;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn-secondary {
+                margin-right: 0;
+            }
+        }
+
+        .stagger-item {
+            opacity: 0;
+            animation: staggerFadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes staggerFadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+    </div>
+
+    <div class="container">
+        <!-- Step 0: Welcome -->
+        <div class="step active welcome-screen" id="step0">
+            <div class="emoji-hero">👋✨</div>
+            <h1>嘿，黑客！</h1>
+            <p class="subtitle">
+                在这里遇见志同道合的伙伴，<br>
+                找到你的队友，一起创造不可能！
+            </p>
+            <button class="btn-primary" onclick="nextStep()">开始认识新朋友 🚀</button>
+        </div>
+
+        <!-- Step 1: Mood Selection -->
+        <div class="step" id="step1">
+            <div class="card">
+                <h2 class="question">此刻的你是什么状态？</h2>
+                <p class="helper-text">可以多选哦～</p>
+                <div class="options-grid">
+                    <button class="option-btn stagger-item" style="animation-delay: 0.1s" onclick="toggleOption(this)">
+                        <span class="option-emoji">🧑‍💻</span>
+                        疯狂改bug中
+                    </button>
+                    <button class="option-btn stagger-item" style="animation-delay: 0.15s" onclick="toggleOption(this)">
+                        <span class="option-emoji">😑</span>
+                        已躺平
+                    </button>
+                    <button class="option-btn stagger-item" style="animation-delay: 0.2s" onclick="toggleOption(this)">
+                        <span class="option-emoji">👀</span>
+                        四处游荡
+                    </button>
+                    <button class="option-btn stagger-item" style="animation-delay: 0.25s" onclick="toggleOption(this)">
+                        <span class="option-emoji">🔥</span>
+                        灵感爆棚
+                    </button>
+                    <button class="option-btn stagger-item" style="animation-delay: 0.3s" onclick="toggleOption(this)">
+                        <span class="option-emoji">☕</span>
+                        咖啡续命
+                    </button>
+                    <button class="option-btn stagger-item" style="animation-delay: 0.35s" onclick="toggleOption(this)">
+                        <span class="option-emoji">🎨</span>
+                        设计灵魂附体
+                    </button>
+                </div>
+            </div>
+            <div class="button-group">
+                <button class="btn-primary" onclick="nextStep()">下一步</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Interest Selection -->
+        <div class="step" id="step2">
+            <div class="card">
+                <h2 class="question">你对什么话题感兴趣？</h2>
+                <p class="helper-text">选择你想聊的方向～</p>
+                <div class="options-grid">
+                    <button class="option-btn stagger-item" style="animation-delay: 0.1s" onclick="toggleOption(this)">
+                        <span class="option-emoji">🤖</span>
+                        AI & 机器学习
+                    </button>
+                    <button class="option-btn stagger-item" style="animation-delay: 0.15s" onclick="toggleOption(this)">
+                        <span class="option-emoji">🌐</span>
+                        Web3 & 区块链
+                    </button>
+                    <button class="option-btn stagger-item" style="animation-delay: 0.2s" onclick="toggleOption(this)">
+                        <span class="option-emoji">📱</span>
+                        移动开发
+                    </button>
+                    <button class="option-btn stagger-item" style="animation-delay: 0.25s" onclick="toggleOption(this)">
+                        <span class="option-emoji">🎮</span>
+                        游戏开发
+                    </button>
+                    <button class="option-btn stagger-item" style="animation-delay: 0.3s" onclick="toggleOption(this)">
+                        <span class="option-emoji">🔐</span>
+                        网络安全
+                    </button>
+                    <button class="option-btn stagger-item" style="animation-delay: 0.35s" onclick="toggleOption(this)">
+                        <span class="option-emoji">☁️</span>
+                        云计算
+                    </button>
+                    <button class="option-btn stagger-item" style="animation-delay: 0.4s" onclick="toggleOption(this)">
+                        <span class="option-emoji">💾</span>
+                        数据科学
+                    </button>
+                    <button class="option-btn stagger-item" style="animation-delay: 0.45s" onclick="toggleOption(this)">
+                        <span class="option-emoji">🎨</span>
+                        UI/UX 设计
+                    </button>
+                </div>
+            </div>
+            <div class="button-group">
+                <button class="btn-secondary" onclick="prevStep()">← 上一步</button>
+                <button class="btn-primary" onclick="nextStep()">下一步</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Project & WeChat -->
+        <div class="step" id="step3">
+            <div class="card">
+                <h2 class="question">告诉我们更多～</h2>
+                <div class="input-group">
+                    <label class="input-label">一句话描述你在做的项目</label>
+                    <input type="text" class="text-input" placeholder="比如：用AI让每个人都能成为音乐制作人 🎵" id="projectInput">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">你的微信 ID（选填，方便小伙伴联系你）</label>
+                    <input type="text" class="text-input" placeholder="wechat_id" id="wechatInput">
+                </div>
+            </div>
+            <div class="button-group">
+                <button class="btn-secondary" onclick="prevStep()">← 上一步</button>
+                <button class="btn-primary" onclick="nextStep()">继续</button>
+            </div>
+        </div>
+
+        <!-- Step 4: AI Chat -->
+        <div class="step" id="step4">
+            <div class="card">
+                <h2 class="question">让我们更了解你 💬</h2>
+                <p class="helper-text">AI 想问你几个好玩的问题～</p>
+                <div class="chat-container" id="chatContainer">
+                    <!-- Chat messages will be added here -->
+                </div>
+            </div>
+            <div class="button-group">
+                <button class="btn-secondary" onclick="skipChat()">跳过聊天</button>
+                <button class="btn-primary" id="chatNextBtn" style="display: none;" onclick="nextStep()">查看我的名片 ✨</button>
+            </div>
+        </div>
+
+        <!-- Step 5: Profile Preview -->
+        <div class="step" id="step5">
+            <h1 style="text-align: center; margin-bottom: 2rem;">你的专属名片！</h1>
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar">🎭</div>
+                </div>
+                <div class="profile-body">
+                    <h3 class="profile-codename">疯狂的梦想家</h3>
+                    <p class="profile-bio">
+                        一个充满创意的灵魂，正在用代码改变世界。热爱探索新技术，相信技术能让生活更美好。
+                    </p>
+                    <div class="profile-tags">
+                        <span class="tag">🤖 AI 爱好者</span>
+                        <span class="tag">🎨 设计驱动</span>
+                        <span class="tag">☕ 咖啡依赖症</span>
+                    </div>
+                    <button class="btn-primary" onclick="finishOnboarding()">进入主页面 🎉</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 0;
+        const totalSteps = 6;
+        let chatQuestionIndex = 0;
+        const chatQuestions = [
+            "如果你的项目是一首歌，会是什么风格的？🎵",
+            "在黑客松现场，你最想找到什么样的队友？",
+            "如果用一个emoji表达你此刻的心情，会是？"
+        ];
+
+        function updateProgress() {
+            const progress = (currentStep / (totalSteps - 1)) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function nextStep() {
+            const steps = document.querySelectorAll('.step');
+            steps[currentStep].classList.remove('active');
+            currentStep++;
+            if (currentStep < steps.length) {
+                steps[currentStep].classList.add('active');
+                updateProgress();
+
+                if (currentStep === 4) {
+                    // Start chat when reaching step 4
+                    setTimeout(startChat, 500);
+                }
+            }
+        }
+
+        function prevStep() {
+            const steps = document.querySelectorAll('.step');
+            steps[currentStep].classList.remove('active');
+            currentStep--;
+            steps[currentStep].classList.add('active');
+            updateProgress();
+        }
+
+        function toggleOption(button) {
+            button.classList.toggle('selected');
+        }
+
+        function startChat() {
+            const container = document.getElementById('chatContainer');
+            container.innerHTML = '';
+            chatQuestionIndex = 0;
+            askNextQuestion();
+        }
+
+        function askNextQuestion() {
+            const container = document.getElementById('chatContainer');
+
+            // Show typing indicator
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'chat-message';
+            typingDiv.innerHTML = '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+            container.appendChild(typingDiv);
+
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+
+            // After 1.5s, replace typing with actual question
+            setTimeout(() => {
+                typingDiv.remove();
+
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'chat-message';
+                messageDiv.innerHTML = `<div class="chat-bubble ai">${chatQuestions[chatQuestionIndex]}</div>`;
+                container.appendChild(messageDiv);
+
+                // Add input for answer
+                setTimeout(() => {
+                    const inputDiv = document.createElement('div');
+                    inputDiv.className = 'input-group';
+                    inputDiv.innerHTML = `
+                        <input type="text" class="text-input" placeholder="输入你的回答..." id="chatInput${chatQuestionIndex}">
+                        <button class="btn-primary" style="margin-top: 1rem; width: 100%;" onclick="submitAnswer(${chatQuestionIndex})">发送 →</button>
+                    `;
+                    container.appendChild(inputDiv);
+                    container.scrollTop = container.scrollHeight;
+                }, 300);
+            }, 1500);
+        }
+
+        function submitAnswer(questionIndex) {
+            const input = document.getElementById(`chatInput${questionIndex}`);
+            const answer = input.value.trim();
+
+            if (!answer) return;
+
+            const container = document.getElementById('chatContainer');
+
+            // Add user message
+            const userDiv = document.createElement('div');
+            userDiv.className = 'chat-message';
+            userDiv.innerHTML = `<div class="chat-bubble user">${answer}</div>`;
+            container.appendChild(userDiv);
+
+            // Remove input
+            input.parentElement.remove();
+
+            // Clear float
+            const clearDiv = document.createElement('div');
+            clearDiv.style.clear = 'both';
+            container.appendChild(clearDiv);
+
+            container.scrollTop = container.scrollHeight;
+
+            chatQuestionIndex++;
+
+            if (chatQuestionIndex < chatQuestions.length) {
+                setTimeout(askNextQuestion, 800);
+            } else {
+                // Chat finished
+                setTimeout(() => {
+                    const thanksDiv = document.createElement('div');
+                    thanksDiv.className = 'chat-message';
+                    thanksDiv.innerHTML = '<div class="chat-bubble ai">太棒了！我已经更了解你了 ✨ 让我为你生成专属名片...</div>';
+                    container.appendChild(thanksDiv);
+                    container.scrollTop = container.scrollHeight;
+
+                    document.getElementById('chatNextBtn').style.display = 'inline-block';
+                }, 1000);
+            }
+        }
+
+        function skipChat() {
+            nextStep();
+        }
+
+        function finishOnboarding() {
+            alert('🎉 欢迎来到 BoHack Social！\n\n在真实版本中，这里会进入主应用界面。');
+        }
+
+        // Initialize
+        updateProgress();
+    </script>
+</body>
+</html>
