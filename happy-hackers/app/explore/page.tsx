@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 import AgentChatModal from '@/components/AgentChatModal'
 
 interface User {
@@ -13,6 +14,17 @@ interface User {
   interests: string[]
   moods: string[]
   color: string // 个性化颜色主题
+}
+
+interface MyProfile {
+  id: string
+  emoji: string
+  title: string
+  project: string
+  bio: string
+  interests: string[]
+  moods: string[]
+  wechat?: string
 }
 
 // Mock data - 柔和配色版本
@@ -130,19 +142,46 @@ const ALL_INTERESTS = [
   '开源项目',
 ]
 
-// Mock 当前用户数据
-const CURRENT_USER = {
-  emoji: '🥷',
-  title: 'Code Ninja',
-  project: '在做一款 AI 聊天机器人'
-}
-
 export default function ExplorePageV2() {
+  const [myProfile, setMyProfile] = useState<MyProfile | null>(null)
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true)
+  const [hasProfile, setHasProfile] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [selectedInterests, setSelectedInterests] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [isChatModalOpen, setIsChatModalOpen] = useState(false)
   const [chatTargetUser, setChatTargetUser] = useState<User | null>(null)
+  const initialized = useRef(false)
+  const router = useRouter()
+
+  // 获取当前用户的 profile
+  useEffect(() => {
+    if (initialized.current) {
+      return
+    }
+    initialized.current = true
+
+    const fetchMyProfile = async () => {
+      try {
+        const response = await fetch('/api/get-profile')
+        const data = await response.json()
+
+        if (data.hasProfile && data.profile) {
+          setMyProfile(data.profile)
+          setHasProfile(true)
+        } else {
+          setHasProfile(false)
+        }
+      } catch (error) {
+        console.error('Failed to fetch profile:', error)
+        setHasProfile(false)
+      } finally {
+        setIsLoadingProfile(false)
+      }
+    }
+
+    fetchMyProfile()
+  }, [])
 
   const filteredUsers = MOCK_USERS.filter(user => {
     const matchesInterests = selectedInterests.length === 0 ||
@@ -158,6 +197,59 @@ export default function ExplorePageV2() {
       prev.includes(interest)
         ? prev.filter(i => i !== interest)
         : [...prev, interest]
+    )
+  }
+
+  // Loading state
+  if (isLoadingProfile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center"
+        >
+          <motion.div
+            className="text-6xl mb-4"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+          >
+            ✨
+          </motion.div>
+          <p className="text-gray-600">加载中...</p>
+        </motion.div>
+      </div>
+    )
+  }
+
+  // No profile - guide to onboarding
+  if (!hasProfile || !myProfile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-md w-full"
+        >
+          <div className="glass rounded-3xl p-12 shadow-xl border border-gray-200/50 text-center">
+            <div className="text-6xl mb-6">🚀</div>
+            <h2 className="text-2xl font-outfit font-bold text-gradient mb-4">
+              开始你的社交之旅
+            </h2>
+            <p className="text-gray-600 mb-8">
+              完成 Onboarding 问卷，让 AI 为你生成专属名片，然后你的分身就可以代表你去找队友啦！
+            </p>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => router.push('/')}
+              className="w-full px-6 py-4 rounded-2xl bg-gradient-to-r from-hot-pink to-purple text-white font-bold shadow-lg"
+            >
+              开始创建名片 →
+            </motion.button>
+          </div>
+        </motion.div>
+      </div>
     )
   }
 
@@ -467,11 +559,15 @@ export default function ExplorePageV2() {
       </AnimatePresence>
 
       {/* Agent Chat Modal */}
-      {chatTargetUser && (
+      {chatTargetUser && myProfile && (
         <AgentChatModal
           isOpen={isChatModalOpen}
           onClose={() => setIsChatModalOpen(false)}
-          user1={CURRENT_USER}
+          user1={{
+            emoji: myProfile.emoji,
+            title: myProfile.title,
+            project: myProfile.project
+          }}
           user2={{
             emoji: chatTargetUser.emoji,
             title: chatTargetUser.title,
