@@ -53,10 +53,10 @@ export default function MePage() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          animate={{ opacity: 1, y: -50 }}
           className="text-center"
         >
           <motion.div
@@ -75,10 +75,10 @@ export default function MePage() {
   // No profile state
   if (!hasProfile || !profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          animate={{ opacity: 1, y: -64 }}
           className="max-w-md w-full"
         >
           <div className="glass rounded-3xl p-12 shadow-xl border border-gray-200/50 text-center">
