@@ -38,6 +38,11 @@ export default function AIChat({ formData, onComplete, onSkip }: Props) {
   const hasLoadedRef = useRef(false)
 
   useEffect(() => {
+    // 滚动到页面顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
+
+  useEffect(() => {
     // Prevent duplicate execution in React Strict Mode
     if (hasLoadedRef.current) {
       return
@@ -225,7 +230,7 @@ export default function AIChat({ formData, onComplete, onSkip }: Props) {
       </motion.div>
 
       {/* Chat Area */}
-      <div className="space-y-6 mb-8 min-h-[300px]">
+      <div className="space-y-6 mb-8 min-h-[150px]">
         <AnimatePresence mode="wait">
           {/* AI Question */}
           <motion.div
