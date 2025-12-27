@@ -13,7 +13,6 @@ interface User {
   bio: string
   interests: string[]
   moods: string[]
-  color: string // 个性化颜色主题
 }
 
 interface MyProfile {
@@ -27,131 +26,52 @@ interface MyProfile {
   wechat?: string
 }
 
-// Mock data - 柔和配色版本
-const MOCK_USERS: User[] = [
-  {
-    id: '1',
-    emoji: '🌙',
-    title: '深夜代码诗人',
-    project: '用AI写诗的聊天机器人',
-    bio: '代码是我的韵脉，bug是我的灵感',
-    interests: ['AI/机器学习', '开源项目', '前端技术'],
-    moods: ['疯狂改bug中', '灵感爆发'],
-    color: 'from-indigo-400 to-purple-500',
-  },
-  {
-    id: '2',
-    emoji: '⚡',
-    title: 'Web3冲浪者',
-    project: 'NFT艺术品交易平台',
-    bio: '在区块链的浪潮中寻找下一个风口',
-    interests: ['Web3/区块链', '设计/UI/UX', '游戏开发'],
-    moods: ['求队友', '四处游荡'],
-    color: 'from-cyan-400 to-blue-500',
-  },
-  {
-    id: '3',
-    emoji: '🎨',
-    title: '像素魔法师',
-    project: '开源设计系统组件库',
-    bio: '每个像素都是精心调教的艺术品',
-    interests: ['设计/UI/UX', '前端技术', '开源项目'],
-    moods: ['灵感爆发', '咖啡续命'],
-    color: 'from-pink-400 to-rose-500',
-  },
-  {
-    id: '4',
-    emoji: '🔥',
-    title: 'AI炼金术士',
-    project: '智能代码审查助手',
-    bio: '用机器学习点石成金',
-    interests: ['AI/机器学习', '后端架构', '开源项目'],
-    moods: ['疯狂改bug中', '咖啡续命'],
-    color: 'from-orange-400 to-red-500',
-  },
-  {
-    id: '5',
-    emoji: '🌈',
-    title: '全栈梦想家',
-    project: '实时协作白板应用',
-    bio: '前端后端都是我的战场',
-    interests: ['前端技术', '后端架构', 'AI/机器学习'],
-    moods: ['求队友', '灵感爆发'],
-    color: 'from-violet-400 to-purple-500',
-  },
-  {
-    id: '6',
-    emoji: '🎮',
-    title: '游戏宇宙建造师',
-    project: '元宇宙社交游戏引擎',
-    bio: '用代码创造平行世界',
-    interests: ['游戏开发', 'Web3/区块链', 'AI/机器学习'],
-    moods: ['四处游荡', '摸鱼中'],
-    color: 'from-emerald-400 to-teal-500',
-  },
-  {
-    id: '7',
-    emoji: '🤖',
-    title: '机器人驯兽师',
-    project: '智能家居控制系统',
-    bio: '让机器听我的指挥',
-    interests: ['硬件/IoT', 'AI/机器学习', '后端架构'],
-    moods: ['疯狂改bug中', '已躺平'],
-    color: 'from-slate-400 to-gray-500',
-  },
-  {
-    id: '8',
-    emoji: '✨',
-    title: '开源传教士',
-    project: '开发者工具CLI框架',
-    bio: '开源改变世界，从我做起',
-    interests: ['开源项目', '前端技术', '后端架构'],
-    moods: ['灵感爆发', '咖啡续命'],
-    color: 'from-amber-400 to-yellow-500',
-  },
-  {
-    id: '9',
-    emoji: '🚀',
-    title: '性能狂魔',
-    project: '超快速Web渲染引擎',
-    bio: '每一毫秒都值得优化',
-    interests: ['前端技术', '后端架构', '开源项目'],
-    moods: ['疯狂改bug中', '求队友'],
-    color: 'from-sky-400 to-blue-500',
-  },
-  {
-    id: '10',
-    emoji: '🎭',
-    title: '体验设计者',
-    project: '无障碍交互组件库',
-    bio: '让每个人都能享受科技之美',
-    interests: ['设计/UI/UX', '前端技术', '开源项目'],
-    moods: ['灵感爆发', '四处游荡'],
-    color: 'from-fuchsia-400 to-pink-500',
-  },
+const ALL_INTERESTS = [
+  '🤖AI/机器学习',
+  '⛓️Web3/区块链',
+  '🎮游戏开发',
+  '💅前端技术',
+  '⚙️后端架构',
+  '🎨设计/UI/UX',
+  '🔌硬件/IoT',
+  '🌟开源项目',
 ]
 
-const ALL_INTERESTS = [
-  'AI/机器学习',
-  'Web3/区块链',
-  '游戏开发',
-  '前端技术',
-  '后端架构',
-  '设计/UI/UX',
-  '硬件/IoT',
-  '开源项目',
+// 颜色主题数组 - 为用户动态分配
+const COLOR_THEMES = [
+  'from-indigo-400 to-purple-500',
+  'from-cyan-400 to-blue-500',
+  'from-pink-400 to-rose-500',
+  'from-orange-400 to-red-500',
+  'from-violet-400 to-purple-500',
+  'from-emerald-400 to-teal-500',
+  'from-slate-400 to-gray-500',
+  'from-amber-400 to-yellow-500',
+  'from-sky-400 to-blue-500',
+  'from-fuchsia-400 to-pink-500',
 ]
+
+// 根据用户 ID 生成稳定的颜色
+function getUserColor(userId: string): string {
+  const hash = userId.split('').reduce((acc, char) => {
+    return char.charCodeAt(0) + ((acc << 5) - acc)
+  }, 0)
+  return COLOR_THEMES[Math.abs(hash) % COLOR_THEMES.length]
+}
 
 export default function ExplorePageV2() {
   const [myProfile, setMyProfile] = useState<MyProfile | null>(null)
   const [isLoadingProfile, setIsLoadingProfile] = useState(true)
   const [hasProfile, setHasProfile] = useState(false)
+  const [users, setUsers] = useState<User[]>([])
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [selectedInterests, setSelectedInterests] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [isChatModalOpen, setIsChatModalOpen] = useState(false)
   const [chatTargetUser, setChatTargetUser] = useState<User | null>(null)
   const initialized = useRef(false)
+  const usersInitialized = useRef(false)
   const router = useRouter()
 
   // 获取当前用户的 profile
@@ -183,7 +103,33 @@ export default function ExplorePageV2() {
     fetchMyProfile()
   }, [])
 
-  const filteredUsers = MOCK_USERS.filter(user => {
+  // 获取所有用户的 profiles（仅在有 profile 后执行）
+  useEffect(() => {
+    if (!hasProfile || usersInitialized.current) {
+      return
+    }
+
+    const fetchAllUsers = async () => {
+      try {
+        setIsLoadingUsers(true)
+        const response = await fetch('/api/get-all-profiles')
+        const data = await response.json()
+
+        if (data.success && data.users) {
+          setUsers(data.users)
+          usersInitialized.current = true
+        }
+      } catch (error) {
+        console.error('Failed to fetch users:', error)
+      } finally {
+        setIsLoadingUsers(false)
+      }
+    }
+
+    fetchAllUsers()
+  }, [hasProfile])
+
+  const filteredUsers = users.filter(user => {
     const matchesInterests = selectedInterests.length === 0 ||
       selectedInterests.some(interest => user.interests.includes(interest))
     const matchesSearch = searchQuery === '' ||
@@ -339,12 +285,12 @@ export default function ExplorePageV2() {
                 onClick={() => setSelectedUser(user)}
                 className="glass rounded-3xl p-6 cursor-pointer hover:shadow-2xl transition-shadow relative overflow-hidden group"
               >
-                <div className={`absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br ${user.color} opacity-10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500`} />
+                <div className={`absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br ${getUserColor(user.id)} opacity-10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500`} />
 
                 <div className="relative">
                   {/* Emoji Avatar - 柔和渐变背景 */}
                   <motion.div
-                    className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${user.color} bg-opacity-20 backdrop-blur-sm flex items-center justify-center text-5xl shadow-md mb-4 relative`}
+                    className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${getUserColor(user.id)} bg-opacity-20 backdrop-blur-sm flex items-center justify-center text-5xl shadow-md mb-4 relative`}
                     whileHover={{ rotate: [0, -10, 10, -10, 0] }}
                     transition={{ duration: 0.5 }}
                   >
@@ -445,13 +391,13 @@ export default function ExplorePageV2() {
                   </svg>
                 </motion.button>
 
-                <div className={`absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br ${selectedUser.color} opacity-20 rounded-full blur-3xl`} />
-                <div className={`absolute -bottom-20 -left-20 w-64 h-64 bg-gradient-to-tr ${selectedUser.color} opacity-20 rounded-full blur-3xl`} />
+                <div className={`absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br ${getUserColor(selectedUser.id)} opacity-20 rounded-full blur-3xl`} />
+                <div className={`absolute -bottom-20 -left-20 w-64 h-64 bg-gradient-to-tr ${getUserColor(selectedUser.id)} opacity-20 rounded-full blur-3xl`} />
 
                 <div className="relative">
                   <div className="flex items-center gap-6 mb-6">
                     <motion.div
-                      className={`w-24 h-24 rounded-2xl bg-gradient-to-br ${selectedUser.color} bg-opacity-20 backdrop-blur-sm flex items-center justify-center text-6xl shadow-lg flex-shrink-0 relative`}
+                      className={`w-24 h-24 rounded-2xl bg-gradient-to-br ${getUserColor(selectedUser.id)} bg-opacity-20 backdrop-blur-sm flex items-center justify-center text-6xl shadow-lg flex-shrink-0 relative`}
                       animate={{ rotate: [0, -5, 5, -5, 0] }}
                       transition={{ duration: 0.5 }}
                     >
