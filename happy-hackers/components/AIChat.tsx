@@ -26,54 +26,22 @@ interface Props {
   onSkip: () => void
 }
 
-const defaultQuestions: Question[] = [
-  {
-    question: '如果你的项目是一种动物，会是什么？🦄',
-    options: [
-      '🦉 猫头鹰 - 夜间最活跃',
-      '🐆 猎豹 - 追求速度与效率',
-      '🦥 树懒 - 慢工出细活',
-      '🦊 狐狸 - 聪明且灵活'
-    ]
-  },
-  {
-    question: '凌晨3点的你通常在做什么？',
-    options: [
-      '💻 还在写代码',
-      '😴 早就睡了',
-      '🎮 打游戏放松',
-      '📚 看技术文档学习'
-    ]
-  },
-  {
-    question: '你最想在黑客松遇到什么样的队友？',
-    options: [
-      '🚀 技术大牛，能快速实现想法',
-      '🎨 设计高手，让产品颜值爆表',
-      '💡 创意达人，脑洞大开',
-      '🤝 团队粘合剂，氛围担当'
-    ]
-  },
-]
-
 export default function AIChat({ formData, onComplete, onSkip }: Props) {
   const [currentQuestion, setCurrentQuestion] = useState(0)
-  const [answers, setAnswers] = useState<Answer[]>([
-    { selectedOptions: [], customInput: '' },
-    { selectedOptions: [], customInput: '' },
-    { selectedOptions: [], customInput: '' },
-  ])
+  const [answers, setAnswers] = useState<Answer[]>([])
   const [selectedOptions, setSelectedOptions] = useState<string[]>([])
   const [customInput, setCustomInput] = useState('')
   const [isTyping, setIsTyping] = useState(true)
-  const [aiQuestions, setAiQuestions] = useState<Question[]>(defaultQuestions)
+  const [aiQuestions, setAiQuestions] = useState<Question[]>([])
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(true)
+  const [loadError, setLoadError] = useState(false)
 
   useEffect(() => {
     // 加载 AI 生成的问题
     const loadQuestions = async () => {
       try {
         setIsLoadingQuestions(true)
+        setLoadError(false)
         const response = await fetch('/api/generate-questions', {
           method: 'POST',
           headers: {
@@ -85,11 +53,13 @@ export default function AIChat({ formData, onComplete, onSkip }: Props) {
         const data = await response.json()
         if (data.questions && data.questions.length === 3) {
           setAiQuestions(data.questions)
-          setAnswers(new Array(data.questions.length).fill(''))
+          setAnswers(new Array(data.questions.length).fill({ selectedOptions: [], customInput: '' }))
+        } else {
+          throw new Error('Invalid questions format')
         }
       } catch (error) {
         console.error('Failed to load AI questions:', error)
-        // 使用默认问题
+        setLoadError(true)
       } finally {
         setIsLoadingQuestions(false)
       }
@@ -149,7 +119,63 @@ export default function AIChat({ formData, onComplete, onSkip }: Props) {
 
   const canProceed = selectedOptions.length > 0 || customInput.trim().length > 0
 
-  const progress = ((currentQuestion + 1) / aiQuestions.length) * 100
+  const progress = aiQuestions.length > 0 ? ((currentQuestion + 1) / aiQuestions.length) * 100 : 0
+
+  // 加载中状态
+  if (isLoadingQuestions) {
+    return (
+      <div className="glass rounded-3xl p-6 sm:p-10 shadow-2xl max-w-2xl mx-auto min-h-[400px] flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
+        >
+          <motion.div
+            className="w-20 h-20 rounded-full bg-gradient-to-br from-hot-pink to-purple flex items-center justify-center text-4xl mx-auto mb-6 shadow-lg"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+          >
+            🤖
+          </motion.div>
+          <h3 className="text-2xl font-outfit font-bold text-gradient mb-2">
+            AI 正在生成问题...
+          </h3>
+          <p className="text-gray-600">
+            根据你的信息量身定制有趣的问题～
+          </p>
+        </motion.div>
+      </div>
+    )
+  }
+
+  // 错误状态
+  if (loadError || aiQuestions.length === 0) {
+    return (
+      <div className="glass rounded-3xl p-6 sm:p-10 shadow-2xl max-w-2xl mx-auto min-h-[400px] flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center"
+        >
+          <div className="text-6xl mb-4">😕</div>
+          <h3 className="text-2xl font-outfit font-bold text-gray-800 mb-2">
+            哎呀，出错了
+          </h3>
+          <p className="text-gray-600 mb-6">
+            AI 生成问题失败，请刷新页面重试
+          </p>
+          <motion.button
+            onClick={() => window.location.reload()}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-6 py-3 rounded-2xl bg-gradient-to-r from-hot-pink to-purple text-white font-semibold shadow-lg"
+          >
+            刷新页面
+          </motion.button>
+        </motion.div>
+      </div>
+    )
+  }
 
   return (
     <div className="glass rounded-3xl p-6 sm:p-10 shadow-2xl max-w-2xl mx-auto">
