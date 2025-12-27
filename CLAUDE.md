@@ -14,3 +14,9 @@ curl -X POST https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions 
   -H "Authorization: Bearer $QWEN_API_KEY" -H "Content-Type: application/json" \
   -d '{"model":"qwen-plus","messages":[{"role":"user","content":"test"}]}'
 ```
+
+## 关键要点
+
+6. **Structured Outputs**：用 `generateObject` + Zod schema 替代 `generateText`，100% 保证 JSON 格式
+7. **Qwen JSON 模式**：prompt 必须包含 "json" 关键词，否则报错 `<400> must contain the word 'json'`
+8. **React Strict Mode**：useEffect 会执行两次，用 `useRef` 防止重复（成功后才设置 `ref.current = true`）
