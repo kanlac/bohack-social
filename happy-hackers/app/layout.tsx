@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import Navbar from '@/components/Navbar'
+import UserIdInitializer from '@/components/UserIdInitializer'
 
 export const metadata: Metadata = {
   title: 'Hackathon Social - Onboarding',
@@ -15,6 +16,7 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body className="font-manrope antialiased">
+        <UserIdInitializer />
         <Navbar />
         <div className="pt-32">
           {children}
